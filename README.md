@@ -12,25 +12,25 @@
 ```mermaid
 flowchart LR
     subgraph INPUT["Вход"]
-        N[Новость]
-        C[Компания]
+        N["Новость"]
+        C["Компания"]
     end
 
     subgraph FACTORS["Факторы влияния"]
-        F[KEY_RATE<br/>FX<br/>SANCTIONS<br/>COMMODITIES<br/>...]
-        P[Профиль<br/>чувствительности]
-        G[Граф<br/>платежей]
+        F["KEY_RATE<br/>FX<br/>SANCTIONS<br/>COMMODITIES"]
+        P["Профиль<br/>чувствительности"]
+        G["Граф<br/>платежей"]
     end
 
     subgraph SCORE["Скоринг"]
-        R[Релевантность<br/>event × company]
+        R["Релевантность<br/>event × company"]
     end
 
     subgraph GENERATE["Генерация"]
-        A[Агент<br/>plan → tools<br/>→ draft → critic]
+        A["Агент<br/>plan → tools<br/>→ draft → critic"]
     end
 
-    K[Карточка<br/>инсайта]
+    K["Карточка<br/>инсайта"]
 
     N --> F
     C --> P
@@ -41,11 +41,23 @@ flowchart LR
     R --> A
     A --> K
 
-    style N fill:#e3f2fd
-    style C fill:#e3f2fd
-    style R fill:#f3e5f5
-    style A fill:#e8f5e9
-    style K fill:#c8e6c9
+    style INPUT fill:#1e3a5f,stroke:#0d1f33,color:#ffffff
+    style FACTORS fill:#5c3a1e,stroke:#3d2612,color:#ffffff
+    style SCORE fill:#4a1e5c,stroke:#2d123a,color:#ffffff
+    style GENERATE fill:#1e5c2d,stroke:#123a1c,color:#ffffff
+
+    style N fill:#3b82f6,stroke:#1e40af,color:#ffffff
+    style C fill:#3b82f6,stroke:#1e40af,color:#ffffff
+
+    style F fill:#f59e0b,stroke:#b45309,color:#000000
+    style P fill:#f59e0b,stroke:#b45309,color:#000000
+    style G fill:#f59e0b,stroke:#b45309,color:#000000
+
+    style R fill:#a855f7,stroke:#6b21a8,color:#ffffff
+
+    style A fill:#22c55e,stroke:#15803d,color:#000000
+
+    style K fill:#10b981,stroke:#047857,color:#ffffff
 ```
 
 ---
