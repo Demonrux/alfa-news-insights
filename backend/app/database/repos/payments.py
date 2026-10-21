@@ -1,7 +1,7 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from app.database.models import Payment
+from backend.app.database.models import Payment
 
 
 class PaymentsRepo:

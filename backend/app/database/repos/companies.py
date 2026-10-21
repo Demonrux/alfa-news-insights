@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.database.models import Company, CompanyLink
+from backend.app.database.models import Company, CompanyLink
 
 
 class CompaniesRepo:

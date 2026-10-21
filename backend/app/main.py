@@ -3,13 +3,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.database.database import Database
-from app.database.session import SessionLocal
-from app.ingest.parser import NewsParser, SOURCES
-from app.demo.select_demo import select_demo, dump_demo_json
-
-
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+from backend.app.database.database import Database
+from backend.app.database.session import SessionLocal
+from backend.app.ingest.parser import NewsParser, SOURCES
+from backend.app.demo.select_demo import select_demo, dump_demo_json
+from backend.app.config import DATA_DIR
 
 
 def main() -> None:

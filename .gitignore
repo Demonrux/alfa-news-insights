@@ -1,19 +1,17 @@
 .venv/
+backend/.venv/
 __pycache__/
 *.pyc
 
 data/
+
 *.db
-*.csv
-*.json
-!package.json
 
 .env
 .env.local
 .env.*.local
 .env.production
 .env.development
-
 !.env.example
 
 .idea/

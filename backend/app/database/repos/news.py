@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.database.models import News, Event
+from backend.app.database.models import News, Event
 
 
 class NewsRepo:

@@ -13,7 +13,7 @@ import httpx
 import trafilatura
 from sqlalchemy.orm import Session
 
-from app.database.models import News
+from backend.app.database.models import News
 
 
 _HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; news-analytics/1.0)"}

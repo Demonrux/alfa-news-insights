@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from typing import Iterator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
-from app.config import DATABASE_URL
+from backend.app.config import DATABASE_URL
 
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.database.models import Event
+from backend.app.database.models import Event
 
 
 class EventsRepo:

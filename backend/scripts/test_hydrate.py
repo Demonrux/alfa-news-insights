@@ -1,5 +1,5 @@
 # scripts/test_hydrate.py
-from app.ingest.parser import NewsParser
+from backend.app.ingest.parser import NewsParser
 
 urls = [
     "https://1prime.ru/20261020/stavka-874330135.html",

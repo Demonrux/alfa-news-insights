@@ -4,14 +4,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.database.session import Base, engine, SessionLocal
-from app.database.models import (
+from backend.app.database.session import Base, engine, SessionLocal
+from backend.app.database.models import (
     Company, CompanyLink, Person, Payment,
 )
-from app.database.loader import DatasetLoader
-
-
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+from backend.app.database.loader import DatasetLoader
+from backend.app.config import DATA_DIR
 
 
 def main() -> None:

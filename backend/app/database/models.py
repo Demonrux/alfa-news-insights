@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, Float, DateTime, JSON, ForeignKey, Boolean
-from app.database.session import Base
+from sqlalchemy import Column, String, Text, Float, DateTime, JSON, ForeignKey
+from backend.app.database.session import Base
 
 
 def _uuid() -> str:

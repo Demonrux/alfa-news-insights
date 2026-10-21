@@ -8,7 +8,7 @@ import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.database.models import Company, CompanyLink, Person, Payment
+from backend.app.database.models import Company, CompanyLink, Person, Payment
 
 
 class DatasetLoader:

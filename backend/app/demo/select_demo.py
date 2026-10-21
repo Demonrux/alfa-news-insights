@@ -2,8 +2,8 @@ import json
 from dataclasses import dataclass, asdict
 from typing import Optional
 
-from app.database.database import Database
-from app.database.models import Company
+from backend.app.database.database import Database
+from backend.app.database.models import Company
 
 
 @dataclass
