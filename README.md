@@ -119,7 +119,7 @@ docker compose --profile init up --build
    python backend/scripts/run_load_data.py   # Загрузка CSV 
    python backend/scripts/run_parsing.py     # Парсинг новостей 
    python backend/scripts/run_demo.py        # Выбор demo-компаний 
-   ```
+
 
 *(Если вам нужно обновить данные в локальной БД, запустите `python backend/scripts/load_data.py` и `python backend/app/main.py`, предварительно указав в `.env` локальный `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/alfa`)*.
 
