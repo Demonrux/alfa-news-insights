@@ -65,7 +65,7 @@ flowchart LR
 ## Запуск
 
 1. Клонируйте репозиторий:
-   `git clone https://github.com/Demonrux/alfa-news-insights`
+   `git clone https://github.com/Demonrux/alfa-news-insights` или `git pull origin main`, если уже склонирован
    
 2. **Подготовьте данные:**
    Положите файлы датасета в папку `data/`:
