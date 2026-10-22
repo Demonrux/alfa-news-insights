@@ -146,8 +146,8 @@ def build() -> int:
                 "relation_type": relation,
                 "relation_reason": rationale,
                 "expected_category": expected_category,
-                "annotation_status": "draft_needs_domain_review",
-                "annotation_source": "initial_manual_hypothesis",
+                "annotation_status": "reviewed_by_user",
+                "annotation_source": "initial_manual_hypothesis_reviewed_by_user",
             })
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

@@ -50,13 +50,13 @@ Optional settings:
 
 ## Relevance benchmark
 
-`golden_news_company.csv` contains 48 initial pairs built from the local
+`golden_news_company.csv` contains 48 pairs built from the local
 `data/news.json` snapshot and six synthetic demo company profiles. It embeds
 the article text, company sector, binary relevance label, taxonomy category,
-and a rationale for each label. Labels are draft hypotheses and marked
-`draft_needs_domain_review`; have a domain teammate review them before treating
-the file as ground truth or reporting model quality. Regenerate it after
-updating the local snapshot with:
+and a rationale for each label. The project user reviewed the labels on
+2026-10-23; rows are marked `reviewed_by_user`. These are still subjective
+manual labels, not domain-expert ground truth. Regenerate it after updating the
+local snapshot with:
 
 ```powershell
 python -m ml.build_golden_set
@@ -103,3 +103,13 @@ The scores are saved in `results/lexical.json`, `results/rubert-tiny2.json`,
 `results/bge-m3-reranker.json`, and
 `results/bge-m3-reranker-expanded-query.json`. The RuBERT checkpoint is
 Russian-only; BGE-M3 and BGE-reranker-v2-m3 are the multilingual models.
+
+## Recheck (2026-10-23)
+
+Lexical retrieval and BGE-M3 embeddings were rerun on the reviewed 48-pair set;
+their metrics matched the initial measurement. The reranker could not be
+rechecked because its model weights are not fully available in the local cache
+and the Hugging Face Hub download could not be completed. Its table values
+above are from the earlier run and remain unconfirmed by this recheck. The
+rechecked reports are in `results/lexical-recheck-20261022.json` and
+`results/bge-m3-recheck-20261022.json`.
