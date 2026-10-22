@@ -87,20 +87,16 @@ docker compose down
 docker compose down -v
 docker compose --profile init up --build
 ```
-*Флаг `-v` удаляет volume с базой данных, чтобы `init_db` создал таблицы с нуля.*
 
 ### Проверка работы
-После запуска (в любом режиме) API будет доступно по адресу:
+После запуска API будет доступно по адресу:
 **http://localhost:8000/docs**
 
 ## Запуск
 
 1. Клонируйте репозиторий:
-<<<<<<< HEAD
-     `git clone https://github.com/Demonrux/alfa-news-insights` или `git pull origin main` , если уже склонирован
-=======
-   `git clone https://github.com/Demonrux/alfa-news-insights` или `git pull origin main`, если уже склонирован
->>>>>>> 391a0e665f2ac693bac3ed219bede696c4e9e681
+`git clone https://github.com/Demonrux/alfa-news-insights` или `git pull origin main` , если уже склонирован
+
    
 2. **Подготовьте данные:**
    Положите файлы датасета в папку `data/`:
