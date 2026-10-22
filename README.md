@@ -61,23 +61,30 @@ flowchart LR
 ```
 
 ---
-## Работа с Docker
 
-Перед первым запуском, проверьте что CSV-файлы и папка `analyst` лежат в папке `data/`.
+#  Быстрый старт (Docker)
 
-### 1. Первый запуск (или полный сброс базы)
-Используется, когда вы только склонировали репозиторий или хотите начисто перезалить все данные из CSV.
+**Шаг 0: Подготовка данных**
+Перед первым запуском убедитесь, что CSV-файлы и папка `analyst` с PDF лежат в папке `data/` в корне проекта:
+- `data/df_Uid_data_hack.csv`
+- `data/df_Uid_payment_hack.csv`
+- `data/df_Fid_Uid_link_hack.csv`
+- `data/analyst/` (9 PDF-отчетов ЦМИ)
+
+### 1. Первый запуск (загрузка данных)
+Используется, когда вы только склонировали репозиторий или хотите начисто перезалить все данные из CSV. Docker соберет образы, поднимет Postgres, загрузит компании и спарсит новости и затем запустит API.
 ```bash
 docker compose --profile init up --build
 ```
+*Дождитесь окончания (там 5 минут примерно). API будет доступно: **http://localhost:8000/docs***
 
-### 2. Обычный запуск
-Данные в базе сохраняются, ничего не перезаписывается.
+### 2. Обычный ежедневный запуск
+Это обычный запуск. Данные в базе сохраняются, ничего не перезаписывается, занимает пару секунд.
 ```bash
 docker compose up -d
 ```
 
-### 3. Остановка
+### 3. Остановка проекта
 ```bash
 docker compose down
 ```
@@ -88,29 +95,33 @@ docker compose down -v
 docker compose --profile init up --build
 ```
 
-### Проверка работы
-После запуска API будет доступно по адресу:
-**http://localhost:8000/docs**
+---
 
-## Запуск
+## Локальный запуск
 
-1. Клонируйте репозиторий:
-`git clone https://github.com/Demonrux/alfa-news-insights` или `git pull origin main` , если уже склонирован
+Если вы пишете код и хотите, чтобы изменения применялись моментально без пересборки Docker-образов.
 
-   
-2. **Подготовьте данные:**
-   Положите файлы датасета в папку `data/`:
-   - `data/df_Uid_data_hack.csv`
-   - `data/df_Uid_payment_hack.csv`
-   - `data/df_Fid_Uid_link_hack.csv`
-   - PDF-отчеты в папку `data/analyst/`
+1. **Окружение:**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate       # Windows: .venv\Scripts\activate
+   pip install -r backend/requirements.txt
+   cp .env.example .env
+   ```
 
-3. Запустите команду:
-   `docker compose up --build`
+2. **Запустите только БД в Docker:**
+   ```bash
+   docker compose up -d db
+   ```
 
-4. Дождитесь окончания (там минут 5 примерно).
+3. **Запустите API локально с авто-перезагрузкой:**
+   ```bash
+   uvicorn backend.app.api.main:app --reload
+   ```
 
-5. Документация API будет доступна по адресу: `http://localhost:8000/docs`
+*(Если вам нужно обновить данные в локальной БД, запустите `python backend/scripts/load_data.py` и `python backend/app/main.py`, предварительно указав в `.env` локальный `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/alfa`)*.
+
+---
 
 ## Чем выделяемся (нужно обдумать )
 
