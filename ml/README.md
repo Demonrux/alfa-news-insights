@@ -47,3 +47,59 @@ Optional settings:
 | `ML_EMBEDDING_MODEL` | `BAAI/bge-m3` |
 | `ML_RERANKER_MODEL` | `BAAI/bge-reranker-v2-m3` |
 | `ML_DEVICE` | automatic |
+
+## Relevance benchmark
+
+`golden_news_company.csv` contains 48 initial pairs built from the local
+`data/news.json` snapshot and six synthetic demo company profiles. It embeds
+the article text, company sector, binary relevance label, taxonomy category,
+and a rationale for each label. Labels are draft hypotheses and marked
+`draft_needs_domain_review`; have a domain teammate review them before treating
+the file as ground truth or reporting model quality. Regenerate it after
+updating the local snapshot with:
+
+```powershell
+python -m ml.build_golden_set
+```
+
+Evaluate the dependency-free lexical baseline immediately:
+
+```powershell
+python -m ml.evaluate_retrieval --method lexical --out ml/results/lexical.json
+```
+
+After installing the optional ML dependencies and downloading model weights,
+compare the embedding model and reranker:
+
+```powershell
+python -m ml.evaluate_retrieval --method all --out ml/results/models.json
+```
+
+The evaluator also accepts `--embedding-model` and `--reranker-model` for
+cached or alternative checkpoints, `--hf-home` to select a cache location,
+and `--offline` to prohibit hub access.
+
+The report includes macro `Recall@1/3/5`, `MRR`, and per-company scores.
+
+## Initial measurement (2026-10-22)
+
+| Method | Recall@1 | Recall@3 | Recall@5 | MRR |
+| --- | ---: | ---: | ---: | ---: |
+| Lexical overlap baseline | 0.1250 | 0.3750 | 0.6250 | 0.7032 |
+| Cached `cointegrated/rubert-tiny2` embeddings | 0.0833 | 0.2389 | 0.5639 | 0.5972 |
+| BGE-M3 embeddings | 0.1083 | 0.1833 | 0.4444 | 0.6306 |
+| BGE-M3 + BGE-reranker-v2-m3 | 0.2056 | 0.5639 | 0.7389 | 0.9167 |
+| BGE-M3 + reranker + expanded company context | 0.2056 | 0.5833 | 0.7806 | 0.9167 |
+
+The model comparison is provisional: there are only six company queries and
+eight candidate stories per query, and the labels still need domain review.
+On this sample, dense retrieval alone is weaker than lexical overlap at
+Recall@3/5; adding the cross-encoder reranker improves Recall@3/5 to 0.5639 /
+0.7389. Adding hand-written sector terms and synonyms to the company query
+then lifts Recall@3/5 further to 0.5833 / 0.7806; MRR and Recall@1 stay flat.
+These figures are an initial signal, not a model-selection result.
+The scores are saved in `results/lexical.json`, `results/rubert-tiny2.json`,
+`results/lexical-expanded-query.json`, `results/bge-m3.json`,
+`results/bge-m3-reranker.json`, and
+`results/bge-m3-reranker-expanded-query.json`. The RuBERT checkpoint is
+Russian-only; BGE-M3 and BGE-reranker-v2-m3 are the multilingual models.

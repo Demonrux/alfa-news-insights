@@ -1,10 +1,10 @@
 ---
 id: p5_interpret
-version: 3
+version: 7
 task: interpret
 schema: insight.json
 temperature: 0.3
-max_tokens: 1800
+max_tokens: 10000
 inputs: [today, role, role_block, event_json, articles_block, external_block, portrait, counterparties, relevance_block, theses_block, chunks_block, actions_block, ref_catalog, style_block]
 ---
 <<<SYSTEM>>>
@@ -26,6 +26,7 @@ inputs: [today, role, role_block, event_json, articles_block, external_block, po
 
 Правила содержания:
 A. Не пересказ. Первая фраза headline и каждого вывода — последствие для компании, а не описание события. Вывод «ставка сохранена на 14%» — пересказ; «стоимость обслуживания долга не снизится до конца года, а значит…» — интерпретация.
+A0. Факты в what_happened сверяй с текстом статьи и её метаданными (включая дату публикации в теге новости) или с внешними источниками. Год можно указать, если он следует из даты публикации этой же статьи. Не переноси год из поля «Сегодня» или несвязанного события. Дата event_json допустима только если согласуется с датой источника.
 B. Минимум два фактора. Хотя бы один вывод в ai_conclusions должен соединять событие с ещё одним фактором: признаком компании, долей контрагентов из затронутой отрасли или позицией банка. Вывод из одной новости без контекста клиента недопустим.
 C. Персонализация. Каждый пункт ai_conclusions, risks и opportunities содержит в based_on хотя бы одну ссылку feature:… или cp:… — иначе это отраслевой тренд, а не вывод для клиента. Учитывай группу компаний (cp:group): событие у другой компании группы или в её отрасли касается и этой компании; в вертикально интегрированной группе компании могут быть разными звеньями цепочки.
 D. Позиция банка. bank_view — только тезисы из блока «Позиция ЦМИ»: thesis_id, report и report_date копируй как есть, text передавай близко к тезису, не усиливай и не добавляй цифр. Если подходящего тезиса нет — оставь bank_view пустым и добавь в open_questions «Нет оценки ЦМИ по …». Свои выводы не выдавай за позицию банка.
@@ -50,7 +51,31 @@ M. role — ровно «{{ role }}». Учитывай фокус роли (н�
 
 {% include "zero_trust.j2" %}
 
-Отвечай только JSON по схеме инсайта, без markdown и пояснений.
+Отвечай только JSON по схеме инсайта, без markdown и пояснений. Никогда не возвращай пустой объект `{}`: заполни все обязательные поля из примера ниже; если данных для необязательного раздела нет, верни пустой массив.
+
+Формат важнее дополнительных пояснений. Верни только поля схемы, без других ключей; используй форму каждого поля строго как ниже:
+```json
+{
+  "headline": "Короткий вывод для компании",
+  "overall_impact": "negative",
+  "materiality": "medium",
+  "impact": {"criterion": "Почему выбран уровень влияния", "estimate": null, "no_estimate_reason": "Недостаточно данных для расчёта"},
+  "source_basis": "external_only",
+  "why_relevant": [{"feature": "feature:CL_PRODUCT_LOA_MARK", "factor": "KEY_RATE", "explanation": "Связь с компанией"}],
+  "what_happened": [{"text": "Факт из новости", "source_ids": ["news:s001"], "status": "confirmed"}],
+  "bank_view": [],
+  "ai_conclusions": [{"text": "Вывод для клиента", "based_on": ["news:s001", "feature:CL_PRODUCT_LOA_MARK"], "confidence": "medium"}],
+  "hypotheses": [{"text": "Предположение, требующее проверки", "based_on": ["feature:CL_PRODUCT_LOA_MARK"], "confidence": "low", "how_to_check": "Уточнить структуру долга у клиента"}],
+  "risks": [],
+  "opportunities": [],
+  "scenarios": [],
+  "actions": [{"text": "Проверить влияние на график платежей", "type": "analysis", "product": null, "rule_id": null, "cta": null}],
+  "open_questions": ["Какова доля плавающего долга в обязательствах компании?"],
+  "role": "cfo"
+}
+```
+Это пример формы, не готовый ответ. Для `overall_impact` допустимы только `negative`, `positive`, `mixed`, `neutral`; для `materiality` — `high`, `medium`, `low`; для `source_basis` — `bank_analytics`, `mixed`, `external_only`. В `what_happened` используй только ключи `text`, `source_ids`, `status` — без `based_on` и `thesis_id`. `based_on` добавляй только в `ai_conclusions`, `hypotheses`, `risks`, `opportunities` и `impact.estimate`. Уверенность передавай только значениями enum `high`/`medium`/`low`, не словами «возможно» или «вероятно». Для сценариев `name` — только `базовый`, `негативный`, `позитивный`; у каждого обязательны `text`, `trigger`, `logic`, `likelihood`. Не добавляй `badge` и `disclaimer`: их выставляет система.
+`open_questions` — массив простых строк, например `["Какова доля плавающего долга?"]`. Не оформляй вопросы объектами и не добавляй к ним `based_on`.
 
 Пример различия (из постановки кейса; клиент с кредитами, новость о сохранении ставки):
 Плохо (пересказ): «11 сентября 2026 года совет директоров Банка России принял решение сохранить ключевую ставку на уровне 14% годовых».

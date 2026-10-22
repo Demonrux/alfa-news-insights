@@ -99,6 +99,38 @@ def test_journal_stops_at_daily_budget(tmp_path):
     assert json.loads((tmp_path / "j.jsonl").read_text().splitlines()[0])["prompt"] == "p5_interpret@v2"
 
 
+def test_live_caller_keeps_primary_when_fallback_is_unusable(monkeypatch, tmp_path):
+    primary = llm.LLMResult('{"invalid": true}', "primary", 10, 10, 0.1, 0.01)
+    fallback = llm.LLMResult("", "fallback", 10, 10, 0.1, 0.01, finish_reason="length")
+    monkeypatch.setattr(llm, "model_for", lambda task: "primary")
+    monkeypatch.setattr(llm, "fallback_for", lambda task: "fallback")
+    monkeypatch.setattr(llm, "call", lambda messages, model, **kw: primary if model == "primary" else fallback)
+
+    caller = llm.live_caller(llm.Journal(tmp_path / "journal.jsonl"))
+    result = caller("interpret", [], {"id": "p5_interpret", "version": 7,
+                                       "schema": "insight.json", "max_tokens": 10000})
+
+    assert result is primary
+    assert json.loads((tmp_path / "journal.jsonl").read_text(encoding="utf-8").splitlines()[1])["model"] == "fallback"
+
+
+def test_call_does_not_retry_after_timeout(monkeypatch):
+    calls = []
+
+    def timeout(*args, **kwargs):
+        calls.append(1)
+        raise TimeoutError("read timed out")
+
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.setenv("LLM_API_BASE", "https://example.invalid/v1")
+    monkeypatch.setattr(llm.urllib.request, "urlopen", timeout)
+    monkeypatch.setattr(llm.time, "sleep", lambda _: None)
+
+    with pytest.raises(RuntimeError, match="read timed out"):
+        llm.call([{"role": "user", "content": "test"}], model="test-model")
+    assert len(calls) == 1
+
+
 def test_digest_check():
     cards = [{"card_id": "card:a", "insight": FIRST["reference"]}]
     ok = {"title": "Деньги остаются дорогими", "period": "week", "summary": "Ставка сохранится на уровне 14% до конца года.",
@@ -153,8 +185,9 @@ def test_cli_p3_dry_and_theses_verify(tmp_path):
 def test_paths_can_be_moved_by_environment(tmp_path):
     import subprocess, sys
     code = "from prompts.pe.infra.repo import PROMPTS, RUNS; print(PROMPTS, RUNS)"
-    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=ROOT,
-                         env={"PE_PROMPTS_DIR": str(PROMPTS), "PE_RUNS_DIR": str(tmp_path), "PATH": ""}).stdout
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+                         env={"PE_PROMPTS_DIR": str(PROMPTS), "PE_RUNS_DIR": str(tmp_path), "PATH": "",
+                              "PYTHONIOENCODING": "utf-8"}).stdout
     assert str(tmp_path) in out
 
 

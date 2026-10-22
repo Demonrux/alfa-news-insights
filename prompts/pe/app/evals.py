@@ -159,7 +159,20 @@ def run_cases(prompt_id: str, cases_path: str, mode: str = "dry", out_dir: str =
             if mode != "dry":
                 t0 = time.time()
                 try:
-                    raw = mock_output(p.id, case) if mode == "mock" else caller(p.meta["task"], messages, p.meta).text
+                    if mode == "mock":
+                        raw = mock_output(p.id, case)
+                    else:
+                        result = caller(p.meta["task"], messages, p.meta)
+                        raw = result.text
+                        row.update(finish_reason=result.finish_reason, model=result.model,
+                                   tokens_in=result.tokens_in, tokens_out=result.tokens_out,
+                                   cost_rub=result.cost_rub,
+                                   request_max_tokens=result.request_max_tokens,
+                                   response_message_keys=result.response_message_keys,
+                                   response_content_type=result.response_content_type,
+                                   response_content_chars=result.response_content_chars,
+                                   reasoning_chars=result.reasoning_chars,
+                                   usage_completion_details=result.usage_completion_details)
                     obj = llm.extract_json(raw)
                     row["fails"], extra = check_output(p.id, obj, case, ctx, opt, r)
                     row.update(extra)

@@ -85,7 +85,12 @@ def industry_name(code2: str | None, r: Refs) -> str:
 def is_active_client(row: dict, r: Refs) -> bool | None:
     """Проверяет, что компания действующий клиент"""
     v = row.get("CL_TYPE")
-    return None if is_missing(v) else str(v).strip() in r.features.get("active_client_values", ["Client"])
+    if is_missing(v):
+        return None
+    value = str(v).strip().casefold()
+    active_values = {str(item).strip().casefold()
+                     for item in r.features.get("active_client_values", ["Client"])}
+    return value in active_values
 
 
 def group_line(group: dict | None, r: Refs) -> str | None:

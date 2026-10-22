@@ -9,6 +9,7 @@ from llm.agent.tools import fixed_research
 from prompts.pe.app.mocks import mock_caller
 from prompts.pe.domain.checks import api_errors
 from prompts.pe.domain.model import NotEligible
+from prompts.pe.infra.repo import load_prompt
 from prompts.pe.tests.data import CASES, P1, R
 
 
@@ -21,7 +22,8 @@ def test_pipeline_returns_api_ready_card(cid):
     assert stages[0] == "A" and stages[-1] == "F" and {"B", "C", "D"} <= set(stages)
     s = trace.summary()
     assert {"get_profile", "search_alfa_research"} <= set(s["tools"]) and s["tokens_in"] > 0
-    assert {"p1_classify@v2", "p4_planner@v2", "p5_interpret@v3", "p7_critic@v3"} <= set(s["prompts"])
+    expected_prompts = {load_prompt(pid).version for pid in ("p1_classify", "p4_planner", "p5_interpret", "p7_critic")}
+    assert expected_prompts <= set(s["prompts"])
 
 
 def test_card_without_bank_support_gets_badge():

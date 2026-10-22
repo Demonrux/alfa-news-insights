@@ -103,6 +103,12 @@ def test_only_active_clients_are_eligible():
             build_context(case)
 
 
+def test_active_client_value_is_case_insensitive():
+    case = copy.deepcopy(CASES["rate_cfo_construction"])
+    case["company"]["CL_TYPE"] = "CLIENT"
+    assert build_context(case).role == case["role"]
+
+
 @pytest.mark.parametrize("cid", list(CASES))
 def test_reference_cards_pass(cid):
     case = CASES[cid]

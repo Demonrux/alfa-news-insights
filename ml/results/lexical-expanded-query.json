@@ -1,0 +1,54 @@
+{
+  "lexical": {
+    "queries": 6,
+    "mrr": 0.6499,
+    "recall@1": 0.0958,
+    "recall@3": 0.3542,
+    "recall@5": 0.6125,
+    "per_company": {
+      "U_21915": {
+        "relevant_count": 3,
+        "recall@1": 0.0,
+        "recall@3": 0.2857,
+        "recall@5": 0.5714,
+        "reciprocal_rank": 0.3743
+      },
+      "U_9748": {
+        "relevant_count": 4,
+        "recall@1": 0.0,
+        "recall@3": 0.2857,
+        "recall@5": 0.5714,
+        "reciprocal_rank": 0.4152
+      },
+      "U_9250": {
+        "relevant_count": 5,
+        "recall@1": 0.125,
+        "recall@3": 0.375,
+        "recall@5": 0.625,
+        "reciprocal_rank": 0.7932
+      },
+      "U_11496": {
+        "relevant_count": 5,
+        "recall@1": 0.2,
+        "recall@3": 0.4286,
+        "recall@5": 0.6571,
+        "reciprocal_rank": 1.0
+      },
+      "U_142420": {
+        "relevant_count": 4,
+        "recall@1": 0.125,
+        "recall@3": 0.375,
+        "recall@5": 0.625,
+        "reciprocal_rank": 0.7076
+      },
+      "U_408263": {
+        "relevant_count": 3,
+        "recall@1": 0.125,
+        "recall@3": 0.375,
+        "recall@5": 0.625,
+        "reciprocal_rank": 0.6089
+      }
+    },
+    "query_context": true
+  }
+}

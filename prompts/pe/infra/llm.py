@@ -14,9 +14,10 @@ from zoneinfo import ZoneInfo
 
 import yaml
 from dotenv import load_dotenv
+from jsonschema import Draft202012Validator
 
 from ..domain.text import to_json
-from .repo import MODELS_FILE, ROOT, RUNS
+from .repo import MODELS_FILE, ROOT, RUNS, refs
 
 load_dotenv(ROOT / ".env")
 
@@ -43,6 +44,13 @@ class LLMResult:
     tokens_out: int
     latency_s: float
     cost_rub: float | None = None
+    finish_reason: str | None = None
+    request_max_tokens: int | None = None
+    response_message_keys: list[str] | None = None
+    response_content_type: str | None = None
+    response_content_chars: int | None = None
+    reasoning_chars: int = 0
+    usage_completion_details: dict | None = None
 
 
 Caller = Callable[[str, list, dict], "LLMResult"]
@@ -117,6 +125,19 @@ class Journal:
             f.write(to_json(row) + "\n")
 
 
+def _usable_response(result: LLMResult, meta: dict) -> bool:
+    """Requires a non-empty JSON object and validates it against the prompt schema."""
+    try:
+        parsed = extract_json(result.text)
+    except JSONExtractError:
+        return False
+    if not isinstance(parsed, dict) or not parsed:
+        return False
+    schema_name = str(meta.get("schema", "")).removesuffix(".json")
+    schema = refs().schemas.get(schema_name) if schema_name else None
+    return not schema or Draft202012Validator(schema).is_valid(parsed)
+
+
 def live_caller(journal: Journal | None = None) -> Caller:
     """Создаёт вызов настоящих моделей с журналом и лимитом"""
     journal = journal or Journal()
@@ -125,22 +146,40 @@ def live_caller(journal: Journal | None = None) -> Caller:
         """Вызывает модель для одного промпта"""
         journal.check()
         kw = {"temperature": meta.get("temperature", 0.2), "max_tokens": meta.get("max_tokens", 1500)}
+        model = model_for(task)
         try:
-            res = call(messages, model=model_for(task), **kw)
+            res = call(messages, model=model, **kw)
         except BudgetExceeded:
             raise
         except RuntimeError:
-            if not (fb := fallback_for(task)):
+            if not (fb := fallback_for(task)) or fb == model:
                 raise
+            journal.check()
             res = call(messages, model=fb, **kw)
+            journal.write(res, f"{meta['id']}@v{meta.get('version', 0)}", task)
+            return res
+
+        # Record every successful HTTP response, even if its body is unusable.
         journal.write(res, f"{meta['id']}@v{meta.get('version', 0)}", task)
-        return res
+        if _usable_response(res, meta):
+            return res
+
+        fb = fallback_for(task)
+        if not fb or fb == model:
+            return res
+        journal.check()
+        fallback_result = call(messages, model=fb, **kw)
+        journal.write(fallback_result, f"{meta['id']}@v{meta.get('version', 0)}", task)
+        # Keep the primary response when fallback is also empty or schema-invalid.
+        # This preserves the more useful diagnostics and avoids replacing a partial
+        # JSON answer with an empty response (for example finish_reason="length").
+        return fallback_result if _usable_response(fallback_result, meta) else res
 
     return run
 
 
 def call(messages: list[dict], model: str, temperature: float = 0.2, max_tokens: int = 1500) -> LLMResult:
-    """Отправляет запрос модели и повторяет при сбоях"""
+    """Отправляет запрос модели; таймауты не повторяются, чтобы не дублировать платный запрос."""
     base = (os.environ.get("LLM_API_BASE") or os.environ.get("LLM_BASE_URL")
             or "https://changellenge.up.railway.app/v1")
     key = os.environ.get("LLM_API_KEY")
@@ -154,13 +193,30 @@ def call(messages: list[dict], model: str, temperature: float = 0.2, max_tokens:
                                      headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"})
         t0 = time.time()
         try:
-            with urllib.request.urlopen(req, timeout=float(os.environ.get("LLM_TIMEOUT", "90"))) as resp:
+            with urllib.request.urlopen(req, timeout=float(os.environ.get("LLM_TIMEOUT", "120"))) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
             usage = data.get("usage") or {}
-            text = data["choices"][0]["message"].get("content") or ""
+            choice = data["choices"][0]
+            message = choice["message"]
+            content = message.get("content")
+            text = content or ""
+            finish_reason = choice.get("finish_reason")
+            reasoning_chars = sum(
+                len(message.get(key, ""))
+                for key in ("reasoning", "reasoning_content", "analysis")
+                if isinstance(message.get(key), str)
+            )
+            completion_details = usage.get("completion_tokens_details")
             tin = usage.get("prompt_tokens") or estimate_tokens(" ".join(m["content"] for m in messages))
             tout = usage.get("completion_tokens") or estimate_tokens(text)
-            return LLMResult(text, model, tin, tout, round(time.time() - t0, 2), price(model, tin, tout))
+            return LLMResult(text, model, tin, tout, round(time.time() - t0, 2), price(model, tin, tout),
+                             str(finish_reason) if finish_reason is not None else None,
+                             request_max_tokens=max_tokens,
+                             response_message_keys=sorted(str(k) for k in message),
+                             response_content_type=type(content).__name__ if content is not None else None,
+                             response_content_chars=len(text), reasoning_chars=reasoning_chars,
+                             usage_completion_details=(dict(completion_details)
+                                                       if isinstance(completion_details, dict) else None))
         except urllib.error.HTTPError as e:
             error_body = e.read()[:1000]
             last = f"HTTP {e.code}: {error_body!r}"
@@ -172,6 +228,11 @@ def call(messages: list[dict], model: str, temperature: float = 0.2, max_tokens:
                 break
         except (urllib.error.URLError, TimeoutError) as e:
             last = str(e)
+            # После таймаута сервер мог уже обработать запрос и списать токены.
+            # Повторять его автоматически рискованно; live_caller попробует fallback.
+            reason = getattr(e, "reason", None)
+            if isinstance(e, TimeoutError) or isinstance(reason, TimeoutError):
+                break
         time.sleep(2 ** attempt)
     raise RuntimeError(f"LLM недоступна ({model}): {last}")
 

@@ -5,7 +5,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from .model import Context, Refs, primary_factor
+from .model import Article, Context, Refs, primary_factor
 from .text import PII, jaccard, numbers, overlap, periods, sentences, to_json
 
 SEVERITY = {
@@ -91,12 +91,17 @@ def _bad_refs(refs: list[str], catalog: dict) -> list[str]:
 def _check_facts(ins: dict, ctx: Context, r: Refs) -> list[dict]:
     """Проверяет, что факты и цифры взяты из статей"""
     out = []
+    article_dates = {
+        article.ref: article.published_at[:10]
+        for article in (Article.from_dict(a) for a in ctx.case.get("articles", []))
+    }
     for i, it in enumerate(ins.get("what_happened") or []):
         refs = it.get("source_ids") or []
         if bad := _bad_refs(refs, ctx.catalog):
             out.append(issue("invalid_source", "what_happened", f"Несуществующие ссылки {bad}; используйте news:… из каталога", i))
             continue
-        extra = numbers(it.get("text", "")) - numbers(" ".join(ctx.news_texts.get(x, "") for x in refs))
+        sources = " ".join(f"{ctx.news_texts.get(x, '')} {article_dates.get(x, '')}" for x in refs)
+        extra = numbers(it.get("text", "")) - numbers(sources)
         if extra:
             out.append(issue("wrong_fact", "what_happened", f"Цифр {sorted(extra)} нет в статьях {refs}; уберите их или сошлитесь на нужную статью", i))
     return out
@@ -176,6 +181,8 @@ def _check_conclusions(ins: dict, ctx: Context, r: Refs) -> list[dict]:
 
 def _known_feature(feat: str, catalog: dict) -> bool:
     """Проверяет, что признак из why_relevant был в контексте"""
+    if feat.startswith("feature:"):
+        feat = feat.removeprefix("feature:")
     return (f"feature:{feat}" in catalog or f"cp:{feat}" in catalog or feat.startswith("cp:")
             or feat in ("counterparties", "MAINOKVED_CODE"))
 
