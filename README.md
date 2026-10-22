@@ -1,13 +1,8 @@
 # Альфа-Хакатон 2026: Новостная аналитика для бизнес-решений
 
-Сервис внутри интернет-банка **Альфа-Бизнес** для корпоративно-инвестиционного
-бизнеса (КИБ). Для конкретной компании отбирает значимые события из новостного
-потока, объясняет их влияние с учётом данных клиента и позиции Центра
-макроэкономических исследований (ЦМИ) Альфа-Банка.
+Сервис внутри интернет-банка **Альфа-Бизнес** для корпоративно-инвестиционного бизнеса (КИБ). Для конкретной компании отбирает значимые события из новостного потока, объясняет их влияние с учётом данных клиента и позиции Центра макроэкономических исследований (ЦМИ) Альфа-Банка.
 
-**Ключевая идея:** компании в данных обезличены, поэтому новость связывается
-с клиентом не по названию, а через **факторы влияния** (ставка, курс, сырьё,
-отрасль) + **граф платежей** (контрагенты клиента).
+**Ключевая идея:** компании в данных обезличены, поэтому новость связывается с клиентом не по названию, а через **факторы влияния** (ставка, курс, сырьё, отрасль) + **граф платежей** (контрагенты клиента).
 
 ```mermaid
 flowchart LR
@@ -45,38 +40,93 @@ flowchart LR
     style FACTORS fill:#5c3a1e,stroke:#3d2612,color:#ffffff
     style SCORE fill:#4a1e5c,stroke:#2d123a,color:#ffffff
     style GENERATE fill:#1e5c2d,stroke:#123a1c,color:#ffffff
-
     style N fill:#3b82f6,stroke:#1e40af,color:#ffffff
     style C fill:#3b82f6,stroke:#1e40af,color:#ffffff
-
     style F fill:#f59e0b,stroke:#b45309,color:#000000
     style P fill:#f59e0b,stroke:#b45309,color:#000000
     style G fill:#f59e0b,stroke:#b45309,color:#000000
-
     style R fill:#a855f7,stroke:#6b21a8,color:#ffffff
-
     style A fill:#22c55e,stroke:#15803d,color:#000000
-
     style K fill:#10b981,stroke:#047857,color:#ffffff
 ```
 
 ---
 
-## Чем выделяемся (нужно обдумать )
+## Запуск (Docker)
 
-- **Риск второго порядка через граф платежей.** Событие не касается клиента
-  напрямую, но касается его покупателей или поставщиков. Данных нет ни у одного
-  внешнего сервиса.
-- **Автоматический профиль чувствительности** из банковских признаков (кредиты,
-  депозиты, ВЭД, гарантии, зарплатный проект, ОКВЭД, выручка) — без ручной настройки.
-- **Трёхцветная разметка тезисов:** 🟦 факт из новости / 🟥 позиция Альфа-Банка
-  (с номером тезиса из отчёта ЦМИ) / 🟪 вывод AI (с уровнем уверенности).
-- **Одна новость — разные выводы** для разных клиентов и разных ролей
-  (финдиректор / казначей / гендиректор).
-- **Видимый ход рассуждений агента** (трейс): какие инструменты вызваны,
-  какие признаки сработали, что исправил критик.
-- **Самопроверка:** критик проверяет, что у каждого тезиса есть источник,
-  а позиция банка не выдумана.
+**Шаг 0: Подготовка данных**
+Перед первым запуском убедитесь, что CSV-файлы и папка `analyst` с PDF лежат в папке `data/` в корне проекта:
+- `data/df_Uid_data_hack.csv`
+- `data/df_Uid_payment_hack.csv`
+- `data/df_Fid_Uid_link_hack.csv`
+- `data/analyst/` (9 PDF-отчетов ЦМИ)
+
+### 1. Первый запуск (загрузка данных)
+Используется, когда вы только склонировали репозиторий или хотите начисто перезалить все данные из CSV. Docker соберет образы, поднимет Postgres, загрузит компании, спарсит новости, выберет demo-компании и затем запустит API.
+```bash
+docker compose --profile init up --build
+```
+*Дождитесь окончания (~5 минут). API будет доступно: **http://localhost:8000/docs***
+
+### 2. Обычный ежедневный запуск
+Данные в базе сохраняются, ничего не перезаписывается, занимает пару секунд.
+```bash
+docker compose up -d
+```
+
+### 3. Остановка проекта
+```bash
+docker compose down
+```
+
+### 4. Жесткий сброс (если БД сломалась или поменялись CSV)
+```bash
+docker compose down -v
+docker compose --profile init up --build
+```
+
+---
+
+## Локальный запуск 
+
+Если вы пишете код и хотите, чтобы изменения применялись моментально без пересборки Docker-образов.
+
+1. **Окружение:**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate       # Windows: .venv\Scripts\activate
+   pip install -r backend/requirements.txt
+   cp .env.example .env
+   ```
+
+2. **Запустите только БД в Docker:**
+   ```bash
+   docker compose up -d db
+   ```
+
+3. **Загрузите данные, спарсите новости и выберите demo-компании:**
+   ```bash
+   python backend/scripts/run_load_data.py   # Загрузка CSV 
+   python backend/scripts/run_parsing.py     # Парсинг новостей 
+   python backend/scripts/run_demo.py        # Выбор demo-компаний
+   ```
+   *(Убедитесь, что в вашем `.env` указан локальный `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/alfa`)*
+
+4. **Запустите API:**
+   ```bash
+   uvicorn backend.app.api.main:app --reload
+   ```
+
+---
+
+## Чем выделяемся
+
+- **Риск второго порядка через граф платежей.** Событие не касается клиента напрямую, но касается его покупателей или поставщиков. Данных нет ни у одного внешнего сервиса.
+- **Автоматический профиль чувствительности** из банковских признаков (кредиты, депозиты, ВЭД, гарантии, зарплатный проект, ОКВЭД, выручка) — без ручной настройки.
+- **Трёхцветная разметка тезисов:** 🟦 факт из новости / 🟥 позиция Альфа-Банка (с номером тезиса из отчёта ЦМИ) / 🟪 вывод AI (с уровнем уверенности).
+- **Одна новость — разные выводы** для разных клиентов и разных ролей (финдиректор / казначей / гендиректор).
+- **Видимый ход рассуждений агента** (трейс): какие инструменты вызваны, какие признаки сработали, что исправил критик.
+- **Самопроверка:** критик проверяет, что у каждого тезиса есть источник, а позиция банка не выдумана.
 
 ---
 
@@ -84,14 +134,13 @@ flowchart LR
 
 | Слой | Технология |
 |---|---|
-| Язык и зависимости | Python 3.11, uv (uv.lock) |
+| Язык и зависимости | Python 3.11, pip (requirements.txt) |
 | API | FastAPI, uvicorn, Pydantic |
 | БД | PostgreSQL 16 + pgvector, SQLAlchemy 2.0 |
 | Данные и граф | pandas, NetworkX |
 | Эмбеддинги | sentence-transformers, multilingual-e5 (локально) |
-| Новости | feedparser, trafilatura, APScheduler |
+| Новости | feedparser, trafilatura |
 | PDF (ЦМИ) | pymupdf |
-| Шаблоны | Jinja2 |
 | LLM | openai SDK (OpenAI-совместимый) |
 | Фронт | Next.js, TypeScript, Tailwind |
 | Запуск | Docker Compose |
@@ -108,90 +157,36 @@ flowchart LR
 
 ## Структура репозитория
 
-```
+```text
 alfa-news-insights/
-├── docker-compose.yml              db (pgvector) + api + web
+├── docker-compose.yml              db (pgvector) + init_db + api
 ├── .env.example
 ├── README.md
-├── THIRD_PARTY_NOTICES.md
 │
 ├── data/                           НЕ В GIT (конфиденциально)
-│   ├── raw/                        CSV датасета организатора
-│   ├── alfa_reports/               9 PDF ЦМИ
-│   └── synthetic/                  demo_companies.json, тестовые аккаунты
+│   ├── *.csv                       Датасет организатора
+│   ├── analyst/                    9 PDF ЦМИ
+│   └── demo_companies.json         Сгенерированные demo-компании
 │
 ├── backend/                        [Back-dev]
-│   └── app/
-│       ├── main.py                 FastAPI
-│       ├── config.py
-│       ├── database/               модели, репозитории, loader
-│       ├── ingest/                 парсер RSS + гидратация
-│       ├── enrichment/             LLM-обогащение новостей (P1)
-│       ├── api/                    clients, feed, insight, trace, chat, analyze
-│       └── security/               access, audit, masking
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── api/main.py             FastAPI (эндпоинты)
+│   │   ├── config.py
+│   │   ├── database/               модели, репозитории, loader
+│   │   ├── ingest/                 парсер RSS + гидратация
+│   │   ├── demo/                   логика выбора demo-компаний
+│   │   ├── enrichment/             LLM-обогащение (P1)
+│   │   ├── llm.py                  Клиент LLM
+│   │   └── security/               access, audit, masking
+│   └── scripts/                    run_load_data.py, run_parsing.py, run_demo.py
 │
-├── ml/                             
-│   ├── profiles/                   матрица «признак → фактор», okved_map
-│   ├── graph/                      граф контрагентов из платежей
-│   ├── news/                       эмбеддинги, dedup, предфильтр
-│   ├── ranking/                    скоринг релевантности
-│   └── eval/                       golden_set, метрики
-│
-├── llm/                            
-│   ├── client.py, budget.py, cache.py
-│   ├── rag/                        индексация 9 PDF + retrieval
-│   ├── agent/                      planner, tools, loop, trace
-│   └── chat.py
-│
-├── prompts/                        
-│   ├── taxonomy.md                 таксономия факторов
-│   ├── schemas/                    event.json, insight.json, critic.json
-│   ├── p1_classify.md … p13_judge.md
-│   └── thesis_registry.csv         реестр тезисов ЦМИ
-│
+├── ml/                             [ML/Data]
+├── llm/                            [LLM/AI]
+├── prompts/                        [Prompt Eng]
 ├── frontend/                       [Front-dev + Designer]
-│   └── src/                        виджет, лента, карточка, трейс, чат
-│
 └── docs/                           [Product]
-    ├── scenario.md, demo.md
-    ├── checklist.md                чек-лист критериев
-    ├── metrics.md, scaling.md
-    └── pitch.pdf
-```
-
----
-
-## Быстрый старт
-
-### 1. Окружение
-
-```bash
-python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-# заполнить LLM_API_BASE, LLM_API_KEY
-```
-
-### 2. Данные
-
-Положить в `data/` :
-
-- `df_Uid_data_hack.csv` — компании (85K)
-- `df_Uid_payment_hack.csv` — платежи (1.38M)
-- `df_Fid_Uid_link_hack.csv` — физлица (12.5K)
-- `alfa_reports/*.pdf` — 9 документов ЦМИ
-
-### 3. Запуск
-
-```bash
-# Локально (SQLite)
-python scripts/load_data.py       # датасет → БД (~2 мин)
-python app/main.py                # новости + demo (~5 мин)
-python scripts/enrich.py          # LLM-обогащение (~5 мин)
-
-# Через Docker (когда всё готово)
-docker compose up
 ```
 
 ---
@@ -226,12 +221,10 @@ docker compose up
 
 ---
 
-
 ## Ограничения
 
 - **Бюджет LLM:** 500 ₽/день.
 - **Локальные эмбеддинги** разрешены (multilingual-e5) — не тратят бюджет.
-- **SQLite для разработки** — команда переезжает на Postgres + pgvector для эмбеддингов.
 - **Гидратация CBR/PRIME** — ~4 минуты на первый прогон (дотягиваем полный текст).
 
 ---
@@ -239,26 +232,25 @@ docker compose up
 ## Конфиденциальность
 
 Данные организатора (CSV, PDF ЦМИ, БД) — **конфиденциальны**:
-
-- не коммитятся в git (`.gitignore`: `data/`, `*.csv`, `*.pdf`, `*.db`, `.env`);
+- не коммитятся в git (`.gitignore`: `data/`, `*.db`, `.env`);
 - не передаются третьим лицам;
 - не публикуются в открытом доступе.
 
 **Репозиторий приватный**, доступ жюри: **`alfa-hack-2026`** (Read-only).
 
-Итоговые решения (код, модели, предсказания) также конфиденциальны в соответствии
-с п. 4.4.2 правил хакатона.
+Итоговые решения (код, модели, предсказания) также конфиденциальны в соответствии с п. 4.4.2 правил хакатона.
 
 ---
 
-## Переменные окружения
+## Переменные окружения (.env.example)
 
-```
-DATABASE_URL=postgresql://postgres:postgres@db:5432/alfa
-LLM_API_BASE=https://api.example.com/v1
-LLM_API_KEY=...
-LLM_MODEL_ENRICH=gemma-4-26b-a4b
-LLM_MODEL_INSIGHT=glm-5.3-flash
-DAILY_BUDGET_RUB=500
-EMBEDDING_MODEL=intfloat/multilingual-e5-large
+```env
+# База данных (для Docker)
+DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/alfa
+
+# LLM (заполнить перед обогащением)
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_API_KEY=sk-ваш-ключ
+LLM_MODEL=gemma-4-26b-a4b
+LLM_TIMEOUT=60
 ```

@@ -17,5 +17,38 @@ services:
       retries: 10
     restart: unless-stopped
 
+  init_db:
+    profiles: ["init"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: >
+      sh -c "python backend/scripts/run_load_data.py && python backend/scripts/run_parsing.py && python backend/scripts/run_demo.py"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/alfa
+      - TQDM_DISABLE=1
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: alfa-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/alfa
+      - LLM_API_KEY=${LLM_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
 volumes:
   pgdata:
