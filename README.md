@@ -65,14 +65,14 @@ flowchart LR
 ## Запуск
 
 1. Клонируйте репозиторий:
-   `git clone <ссылка>`
+   `git clone https://github.com/Demonrux/alfa-news-insights`
    
 2. **Подготовьте данные:**
-   Скачайте файлы датасета от организаторов и положите их в папку `data/`:
+   Положите файлы датасета в папку `data/`:
    - `data/df_Uid_data_hack.csv`
    - `data/df_Uid_payment_hack.csv`
    - `data/df_Fid_Uid_link_hack.csv`
-   - PDF-отчеты ЦМИ в папку `data/analyst/`
+   - PDF-отчеты в папку `data/analyst/`
 
 3. Запустите команду:
    `docker compose up --build`
