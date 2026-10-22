@@ -1,0 +1,56 @@
+{
+  "embedding-rerank": {
+    "queries": 6,
+    "mrr": 0.9167,
+    "recall@1": 0.2056,
+    "recall@3": 0.5639,
+    "recall@5": 0.7389,
+    "per_company": {
+      "U_21915": {
+        "relevant_count": 3,
+        "recall@1": 0.0,
+        "recall@3": 0.6667,
+        "recall@5": 0.6667,
+        "reciprocal_rank": 0.5
+      },
+      "U_9748": {
+        "relevant_count": 4,
+        "recall@1": 0.25,
+        "recall@3": 0.75,
+        "recall@5": 0.75,
+        "reciprocal_rank": 1.0
+      },
+      "U_9250": {
+        "relevant_count": 5,
+        "recall@1": 0.2,
+        "recall@3": 0.4,
+        "recall@5": 0.8,
+        "reciprocal_rank": 1.0
+      },
+      "U_11496": {
+        "relevant_count": 5,
+        "recall@1": 0.2,
+        "recall@3": 0.4,
+        "recall@5": 0.8,
+        "reciprocal_rank": 1.0
+      },
+      "U_142420": {
+        "relevant_count": 4,
+        "recall@1": 0.25,
+        "recall@3": 0.5,
+        "recall@5": 0.75,
+        "reciprocal_rank": 1.0
+      },
+      "U_408263": {
+        "relevant_count": 3,
+        "recall@1": 0.3333,
+        "recall@3": 0.6667,
+        "recall@5": 0.6667,
+        "reciprocal_rank": 1.0
+      }
+    },
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "query_context": false
+  }
+}

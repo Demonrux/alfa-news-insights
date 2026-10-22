@@ -107,9 +107,8 @@ Russian-only; BGE-M3 and BGE-reranker-v2-m3 are the multilingual models.
 ## Recheck (2026-10-23)
 
 Lexical retrieval and BGE-M3 embeddings were rerun on the reviewed 48-pair set;
-their metrics matched the initial measurement. The reranker could not be
-rechecked because its model weights are not fully available in the local cache
-and the Hugging Face Hub download could not be completed. Its table values
-above are from the earlier run and remain unconfirmed by this recheck. The
-rechecked reports are in `results/lexical-recheck-20261022.json` and
-`results/bge-m3-recheck-20261022.json`.
+their metrics matched the initial measurement. The BGE-M3 plus reranker run
+also completed and reproduced the earlier metrics. Rechecked reports are in
+`results/lexical-recheck-20261022.json`,
+`results/bge-m3-recheck-20261022.json`, and
+`results/bge-m3-reranker-recheck-20261023.json`.
