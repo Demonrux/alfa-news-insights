@@ -1,0 +1,527 @@
+{
+  "type": "object",
+  "properties": {
+    "headline": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 90
+    },
+    "overall_impact": {
+      "type": "string",
+      "enum": [
+        "negative",
+        "positive",
+        "mixed",
+        "neutral"
+      ]
+    },
+    "materiality": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion",
+        "estimate",
+        "no_estimate_reason"
+      ],
+      "properties": {
+        "criterion": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 250
+        },
+        "estimate": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "metric",
+                "range",
+                "method",
+                "based_on",
+                "confidence"
+              ],
+              "properties": {
+                "metric": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "range": {
+                  "type": "string",
+                  "maxLength": 250
+                },
+                "method": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "based_on": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+                  }
+                },
+                "confidence": {
+                  "type": "string",
+                  "enum": [
+                    "medium",
+                    "low"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "no_estimate_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        }
+      }
+    },
+    "source_basis": {
+      "type": "string",
+      "enum": [
+        "bank_analytics",
+        "mixed",
+        "external_only"
+      ]
+    },
+    "why_relevant": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string"
+          },
+          "factor": {
+            "type": "string",
+            "enum": [
+              "KEY_RATE",
+              "INFLATION",
+              "FX",
+              "SANCTIONS_TRADE",
+              "COMMODITIES",
+              "TAX_REGULATION",
+              "GOV_SPENDING",
+              "CONSUMER_DEMAND",
+              "LABOR_MARKET",
+              "CREDIT_DEBT_MARKET",
+              "ECONOMIC_GROWTH",
+              "LOGISTICS",
+              "INDUSTRY_EVENT",
+              "REGIONAL_EVENT",
+              "CORPORATE_EVENT"
+            ]
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "feature",
+          "factor",
+          "explanation"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "what_happened": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(news|ext):[A-Za-z0-9_\\-:.]+$"
+            },
+            "minItems": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "reported",
+              "speculative"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "source_ids",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "bank_view": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "thesis_id": {
+            "type": "string",
+            "pattern": "^T-[A-Z0-9]+-\\d{2}$"
+          },
+          "report": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "report_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "text",
+          "thesis_id",
+          "report",
+          "report_date"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4
+    },
+    "ai_conclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "based_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+            },
+            "minItems": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "based_on",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "hypotheses": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text",
+          "based_on",
+          "confidence",
+          "how_to_check"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "based_on": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "medium",
+              "low"
+            ]
+          },
+          "how_to_check": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "based_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+            },
+            "minItems": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "based_on",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4
+    },
+    "opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 400
+          },
+          "based_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+            },
+            "minItems": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "based_on",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "базовый",
+              "негативный",
+              "позитивный"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "trigger": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "logic": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "likelihood": {
+            "type": "string",
+            "enum": [
+              "более вероятный",
+              "возможный",
+              "маловероятный"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "text",
+          "trigger",
+          "logic",
+          "likelihood"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 3
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 250
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "analysis",
+              "operational",
+              "bank_product"
+            ]
+          },
+          "product": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rule_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cta": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "contact_manager",
+              "request",
+              "callback",
+              null
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "type",
+          "product",
+          "rule_id",
+          "cta"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 4
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "ceo",
+        "cfo",
+        "treasurer",
+        "chief_accountant",
+        "c_level",
+        "other"
+      ]
+    },
+    "badge": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Не является позицией банка",
+        null
+      ],
+      "description": "Ставит система, не модель: обязателен при source_basis = external_only, иначе null"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 400,
+      "description": "Ставит система фиксированным текстом из disclaimers.yaml: инвестиционный дисклеймер + пояснение по source_basis"
+    }
+  },
+  "required": [
+    "headline",
+    "overall_impact",
+    "materiality",
+    "impact",
+    "source_basis",
+    "why_relevant",
+    "what_happened",
+    "bank_view",
+    "ai_conclusions",
+    "hypotheses",
+    "risks",
+    "opportunities",
+    "scenarios",
+    "actions",
+    "open_questions",
+    "role"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "insight.json",
+  "title": "Инсайт — выход P5/P8"
+}

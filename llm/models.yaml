@@ -1,0 +1,30 @@
+classify: google/gemma-4-26b-a4b-it
+theses: z-ai/glm-5.3-flash
+planner: z-ai/glm-5.3-flash
+interpret: z-ai/glm-5.3-flash
+critic: qwen/qwen3.6-35b-a3b
+chat: qwen/qwen3.6-35b-a3b
+judge: moonshotai/kimi-k2.6
+digest: z-ai/glm-5.3-flash
+
+fallback:
+  classify: qwen/qwen3.6-35b-a3b
+  interpret: qwen/qwen3.6-35b-a3b
+  critic: z-ai/glm-5.3-flash
+  planner: qwen/qwen3.6-35b-a3b
+  chat: z-ai/glm-5.3-flash
+  theses: qwen/qwen3.6-35b-a3b
+  judge: deepseek/deepseek-v4.1-flash
+  digest: qwen/qwen3.6-35b-a3b
+
+# Other approved models available for manual task reassignment:
+# google/gemma-4-26b-a4b-it
+# z-ai/glm-5.3-flash
+# qwen/qwen3.6-35b-a3b
+# deepseek/deepseek-v4.1-flash
+# qwen/qwen3-vl-30b-a3b-instruct
+# moonshotai/kimi-k2.6
+
+# Per 1,000 input/output tokens in RUB, keyed by the exact API model ID.
+# No per-token prices were included in the organizer instructions, so leave empty.
+prices: {}

@@ -1,0 +1,17 @@
+Отрасль: {{ p.okved_code or "нет данных" }}{% if p.okved_name %} — {{ p.okved_name }}{% endif %}.
+{% if p.org_line %}{{ p.org_line }}.
+{% endif -%}
+Масштаб: выручка {{ p.revenue_band }}{% if p.workers %}; численность {{ p.workers }}{% endif %}{% if p.age %}; возраст компании {{ p.age }}{% endif %}{% if p.eco_stage %}; стадия развития — {{ p.eco_stage }}{% endif %}.
+{% if p.region %}География: регион регистрации — {{ p.region }}{% if p.city %}, {{ p.city }}{% endif %}.
+{% endif -%}
+Банковские продукты: {{ p.products_yes | join("; ") if p.products_yes else "сведений нет" }}.
+{% if p.products_no %}Нет в банке: {{ p.products_no | join(", ") }}.
+{% endif -%}
+{% if p.fts_line %}{{ p.fts_line }}.
+{% endif -%}
+{% if p.group_line %}{{ p.group_line }}.
+{% endif -%}
+{% if p.client_type %}Статус: {{ p.client_type }}.
+{% endif -%}
+{% if p.unknown %}Нет данных: {{ p.unknown | join(", ") }}.
+{% endif -%}

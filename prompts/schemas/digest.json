@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "digest.json",
+  "title": "Сводка за период — выход P14",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "period",
+    "summary",
+    "top",
+    "watch",
+    "role"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 90
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 700
+    },
+    "top": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "card_id",
+          "why_now"
+        ],
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^card:[A-Za-z0-9_\\-]+$"
+          },
+          "why_now": {
+            "type": "string",
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "watch": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "what",
+          "when",
+          "why",
+          "source_ids"
+        ],
+        "properties": {
+          "what": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "when": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "source_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^(card:[A-Za-z0-9_\\-]+|T-[A-Z0-9]+-\\d{2})$"
+            }
+          }
+        }
+      }
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "ceo",
+        "cfo",
+        "treasurer",
+        "chief_accountant",
+        "c_level",
+        "other"
+      ]
+    }
+  }
+}

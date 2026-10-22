@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(news:[A-Za-z0-9_\\-:.]+|T-[A-Z0-9]+-\\d{2}|chunk:[A-Za-z0-9_\\-:.]+|feature:[A-Z_]+|cp:[a-z0-9_\\-]+|ext:[A-Za-z0-9_\\-:.]+)$"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "text",
+          "source_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "followups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 120
+      },
+      "maxItems": 3
+    },
+    "need_tool": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "basis": {
+      "type": "string",
+      "enum": [
+        "bank_analytics",
+        "mixed",
+        "external_only",
+        "ai_scenario",
+        "no_data"
+      ]
+    }
+  },
+  "required": [
+    "answer",
+    "items",
+    "followups",
+    "need_tool",
+    "basis"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chat.json",
+  "title": "Ответ чата — выход P12"
+}
