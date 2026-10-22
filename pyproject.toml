@@ -25,9 +25,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+ml = ["sentence-transformers>=3.0"]
 
 [tool.setuptools.packages.find]
-include = ["prompts*", "llm*", "backend*"]
+include = ["prompts*", "llm*", "backend*", "ml*"]
 
 [tool.setuptools.package-data]
 prompts = ["**/*.md", "**/*.yaml", "**/*.json", "**/*.csv", "**/*.txt", "**/*.j2"]
