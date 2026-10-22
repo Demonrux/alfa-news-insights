@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
+from tqdm import tqdm
 
 import certifi
 import feedparser
@@ -31,6 +32,7 @@ SOURCES = [
 ]
 
 BUSINESS_CATEGORY = ("Бизнес", "Инвестиции", "Экономика", "Финансы", "Индустрии")
+BUSINESS_KEYWORDS = ("ставк", "цб", "санкц", "контракт", "сделк", "прибыл", "выручк", "акци", "экспорт", "импорт", "налог", "регулятор", "банк")
 ALWAYS_BUSINESS_SOURCES = {"cbr", "prime"}  # TODO пока что костыль
 
 # Источники у которых в RSS пустой body
@@ -266,12 +268,10 @@ class NewsParser:
         """Гидратировать только статьи. Не-статьи и пустые — отбросить."""
         hydrated = 0
         result: list[NewsItem] = []
-        total = len(items)
 
-        for i, item in enumerate(items, 1):
+        for item in tqdm(items, desc=f"  [{source}] Гидратация", unit="news", leave=False):
             if len(item.body) < 100:
                 if not _is_article_url(item.url):
-                    print(f"  [{source}] {i}/{total} — skip")
                     continue
 
                 time.sleep(_HYDRATE_DELAY)
@@ -280,12 +280,11 @@ class NewsParser:
                     item.body = full
                     hydrated += 1
 
-                if i % 10 == 0 or i == total:
-                    print(f"[{source}] {i}/{total} — гидратировано: {hydrated}")
-
             result.append(item)
 
-        print(f"[{source}] готово: {hydrated}/{total} гидратировано")
+        if hydrated:
+            tqdm.write(f" [{source}] докачано: {hydrated} из {len(items)}")
+
         return result
 
     @staticmethod
@@ -352,9 +351,11 @@ class NewsParser:
         """True, если новость из бизнес-раздела или из ALWAYS_BUSINESS_SOURCES."""
         if item.source in ALWAYS_BUSINESS_SOURCES:
             return True
-        if not item.categories:
-            return True
-        return any(c.startswith(BUSINESS_CATEGORY) for c in item.categories)
+        if item.categories:
+            return any(c.startswith(BUSINESS_CATEGORY) for c in item.categories)
+
+        text = item.title.lower()
+        return any(kw in text for kw in BUSINESS_KEYWORDS)
 
     @staticmethod
     def _save_item(db: Session, item: NewsItem, stats: dict, src_stats: dict) -> None:
