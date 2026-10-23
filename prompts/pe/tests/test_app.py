@@ -194,3 +194,17 @@ def test_paths_can_be_moved_by_environment(tmp_path):
 def test_models_cover_every_prompt_task():
     m = load_yaml(MODELS_FILE)
     assert {load_prompt(p).meta["task"] for p in PROMPT_IDS} <= set(m) and set(m["fallback"]) <= set(m)
+
+
+def test_fix_prompt_shares_card_rules_and_format():
+    v = dict(build_context(FIRST).vars, draft_json="{}", issues_json="[]", new_materials_block="")
+    p5, p8 = (load_prompt(pid).render(**v)[0]["content"] for pid in ("p5_interpret", "p8_fix"))
+    for marker in ("СТОП-ПРАВИЛА", "S1. Никаких безапелляционных", "S4. Строгость процентов", "Никогда не возвращай пустой объект"):
+        assert marker in p5 and marker in p8
+
+
+def test_critic_prompt_has_stop_list():
+    text = load_prompt("p7_critic").system
+    for marker in ("СТОП-ЛИСТ", "S1. Обещание результата", "S2. Вывод из отсутствия", "S3. Ложная цепочка", "S4. Процент"):
+        assert marker in text
+

@@ -235,8 +235,10 @@ cases:
       must_offer_rule: [A-RATE-DEP]
       must_not_offer_product: ["кредитование"]
       overall_impact: [positive, mixed]
+    bad_draft_file: regressions/p5_treasurer_live_20261022.json
     expect_critic:
       reference: {pass: true}
+      bad: {pass: false, types_include: [misleading]}
     chat:
       - question: "Покажи то же самое для финансового директора"
     reference:

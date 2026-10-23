@@ -186,7 +186,7 @@ def call(messages: list[dict], model: str, temperature: float = 0.2, max_tokens:
     if not base or not key:
         raise RuntimeError("задайте LLM_API_BASE и LLM_API_KEY или используйте --mode dry/mock")
     body = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"}}
+            "response_format": {"type": "json_object"}, **(models().get("extra_body") or {}).get(model, {})}
     last = None
     for attempt in range(3):
         req = urllib.request.Request(base.rstrip("/") + "/chat/completions", data=json.dumps(body).encode("utf-8"),

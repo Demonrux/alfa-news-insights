@@ -1,0 +1,25 @@
+Отвечай только JSON по схеме инсайта, без markdown и пояснений. Никогда не возвращай пустой объект `{}`: заполни все обязательные поля из примера ниже; если данных для необязательного раздела нет, верни пустой массив.
+
+Формат важнее дополнительных пояснений. Верни только поля схемы, без других ключей; используй форму каждого поля строго как ниже:
+```json
+{
+  "headline": "Короткий вывод для компании",
+  "overall_impact": "negative",
+  "materiality": "medium",
+  "impact": {"criterion": "Почему выбран уровень влияния", "estimate": null, "no_estimate_reason": "Недостаточно данных для расчёта"},
+  "source_basis": "external_only",
+  "why_relevant": [{"feature": "feature:CL_PRODUCT_LOA_MARK", "factor": "KEY_RATE", "explanation": "Связь с компанией"}],
+  "what_happened": [{"text": "Факт из новости", "source_ids": ["news:s001"], "status": "confirmed"}],
+  "bank_view": [],
+  "ai_conclusions": [{"text": "Вывод для клиента", "based_on": ["news:s001", "feature:CL_PRODUCT_LOA_MARK"], "confidence": "medium"}],
+  "hypotheses": [{"text": "Предположение, требующее проверки", "based_on": ["feature:CL_PRODUCT_LOA_MARK"], "confidence": "low", "how_to_check": "Уточнить структуру долга у клиента"}],
+  "risks": [],
+  "opportunities": [],
+  "scenarios": [],
+  "actions": [{"text": "Проверить влияние на график платежей", "type": "analysis", "product": null, "rule_id": null, "cta": null}],
+  "open_questions": ["Какова доля плавающего долга в обязательствах компании?"],
+  "role": "cfo"
+}
+```
+Это пример формы, не готовый ответ. Для `overall_impact` допустимы только `negative`, `positive`, `mixed`, `neutral`; для `materiality` — `high`, `medium`, `low`; для `source_basis` — `bank_analytics`, `mixed`, `external_only`. В `what_happened` используй только ключи `text`, `source_ids`, `status` — без `based_on` и `thesis_id`. `based_on` добавляй только в `ai_conclusions`, `hypotheses`, `risks`, `opportunities` и `impact.estimate`. Уверенность передавай только значениями enum `high`/`medium`/`low`, не словами «возможно» или «вероятно». Для сценариев `name` — только `базовый`, `негативный`, `позитивный`; у каждого обязательны `text`, `trigger`, `logic`, `likelihood`. Не добавляй `badge` и `disclaimer`: их выставляет система.
+`open_questions` — массив простых строк, например `["Какова доля плавающего долга?"]`. Не оформляй вопросы объектами и не добавляй к ним `based_on`.

@@ -195,3 +195,36 @@ def test_p1_metrics():
             {"case": "hh_vacancies", "primary": "INFLATION", "factors": ["INFLATION"]}]
     m = p1_metrics(rows, expect)
     assert m["primary_acc"] == 0.5 and m["relevance_acc"] == 1.0
+
+
+def test_live_regression_treasurer_is_caught():
+    import json
+    from prompts.pe.infra.repo import CASES as CASES_DIR
+    ins = json.loads((CASES_DIR / "regressions" / "p5_treasurer_live_20261022.json").read_text(encoding="utf-8"))
+    pre = precheck(ins, build_context(CASES["rate_treasurer_depositor"]), R)
+    assert not pre["pass"]
+    found = {(i["type"], i["field"]) for i in pre["issues"]}
+    assert {("misleading", "ai_conclusions"), ("misleading", "opportunities")} <= found
+    assert any("15.0" in i["fix"] for i in pre["issues"] if i["type"] == "misleading" and i["field"] == "opportunities")
+
+
+@pytest.mark.parametrize("phrase", ["без риска", "гарантирует доходность", "зафиксировать маржу", "100% защита", "полностью защищает"])
+def test_promises_block_the_card(phrase):
+    case = CASES["rate_treasurer_depositor"]
+    ins = copy.deepcopy(case["reference"])
+    ins["opportunities"][0]["text"] = f"Размещение средств {phrase} до конца года"
+    issues = precheck(ins, build_context(case), R)["issues"]
+    assert any(i["type"] == "misleading" and i["severity"] == "blocker" for i in issues)
+
+
+def test_bank_guarantee_product_is_not_a_promise():
+    from prompts.pe.domain.checks import _GUARANTEE
+    assert not _GUARANTEE.search("использует банковские гарантии под госконтракты")
+
+
+def test_exact_percent_turned_into_range_is_blocked():
+    case = CASES["rate_treasurer_depositor"]
+    ins = copy.deepcopy(case["reference"])
+    ins["opportunities"][0]["text"] = "Доходность размещения около 14–15% сохранится до конца года"
+    issues = precheck(ins, build_context(case), R)["issues"]
+    assert any(i["type"] == "misleading" and "15.0" in i["fix"] for i in issues)

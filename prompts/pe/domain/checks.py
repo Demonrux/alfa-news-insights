@@ -6,7 +6,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from .model import Article, Context, Refs, primary_factor
-from .text import PII, jaccard, numbers, overlap, periods, sentences, to_json
+from .text import PII, jaccard, numbers, overlap, percents, periods, sentences, to_json
 
 SEVERITY = {
     "schema": "blocker", "invalid_source": "blocker", "fabricated_bank_view": "blocker", "stale_bank_view": "blocker",
@@ -17,6 +17,8 @@ SEVERITY = {
     "basis_mismatch": "major", "too_many_products": "major",
     "forbidden_phrase": "minor", "too_long": "minor",
 }
+_GUARANTEE = re.compile(r"без\s+(какого-либо\s+|всякого\s+)?риска|гарантиру\w*|гарантирован\w*|зафиксировать\s+(текущую\s+)?маржу|100\s*%\s*защит\w*"
+                        r"|полностью\s+защища\w*|точно\s+не\s+(снизит|вырастет|изменит|упад)\w*", re.I)
 _BANK_VOICE = re.compile(r"\b(альфа-)?банк\s+(считает|рекомендует|ожидает|полагает|советует)|по\s+мнению\s+(альфа-)?банка", re.I)
 AI_FIELDS = ("ai_conclusions", "risks", "opportunities")
 _TEXT_FIELDS = ("what_happened", "bank_view", "ai_conclusions", "hypotheses", "risks", "opportunities", "scenarios",
@@ -133,6 +135,13 @@ def _check_bank_view(ins: dict, ctx: Context, r: Refs) -> list[dict]:
     return out
 
 
+def _ai_sources(it: dict, ctx: Context, r: Refs) -> str:
+    """Собирает тексты, на которые может опираться вывод AI"""
+    refs_ = it.get("based_on") or []
+    return " ".join([ctx.news_texts.get(x, "") for x in refs_] + [ctx.vars.get("portrait", ""), ctx.vars.get("counterparties", "")]
+                    + [r.registry[x]["thesis"] + " " + (r.registry[x].get("forecast") or "") for x in refs_ if x in r.registry])
+
+
 def _check_ai_item(f: str, i: int, it: dict, ctx: Context, r: Refs) -> list[dict]:
     """Проверяет один вывод AI на ссылки, персонализацию и цифры"""
     out, refs_ = [], it.get("based_on") or []
@@ -141,11 +150,12 @@ def _check_ai_item(f: str, i: int, it: dict, ctx: Context, r: Refs) -> list[dict
     if not any(x.startswith(("feature:", "cp:")) for x in refs_):
         out.append(issue("no_personalization", f, "Добавьте опору на признак компании (feature:…) или контрагентов (cp:…)",
                          i, "major" if f == "ai_conclusions" else "minor"))
-    if f == "ai_conclusions" and it.get("confidence") not in ("medium", "low"):
-        src = " ".join([ctx.news_texts.get(x, "") for x in refs_] + [ctx.vars.get("portrait", ""), ctx.vars.get("counterparties", "")]
-                       + [r.registry[x]["thesis"] + " " + (r.registry[x].get("forecast") or "") for x in refs_ if x in r.registry])
+    if it.get("confidence") not in ("medium", "low"):
+        src = _ai_sources(it, ctx, r)
         if extra := numbers(it.get("text", "")) - numbers(src):
             out.append(issue("wrong_fact", f, f"Цифры {sorted(extra)} не из источников при confidence=high; дайте диапазон и снизьте уверенность", i, "major"))
+    if extra_pct := percents(it.get("text", "")) - percents(_ai_sources(it, ctx, r)):
+        out.append(issue("misleading", f, f"Процентов {sorted(extra_pct)} нет в источниках; используйте цифру источника ровно в том виде", i))
     return out
 
 
@@ -251,6 +261,8 @@ def _check_style_and_safety(ins: dict, ctx: Context, r: Refs) -> list[dict]:
             out.append(issue("too_long", f, f"Не больше {r.limits.get('item_sentences', 3)} предложений в пункте", i))
         if f not in ("bank_view", "open_questions") and _BANK_VOICE.search(txt):
             out.append(issue("misleading", f, "Вывод AI подан как мнение банка; позиция банка — только в bank_view по тезису ЦМИ", i))
+        if f != "open_questions" and _GUARANTEE.search(txt):
+            out.append(issue("misleading", f, "Не обещайте результат: прогноз ЦМИ это ожидание, пишите «вероятно» вместо «без риска»", i))
         what = next((w for rx, w in PII if rx.search(txt)), None)
         if what:
             out.append(issue("sensitive_data", f, f"В тексте {what}; используйте доли и диапазоны", i))

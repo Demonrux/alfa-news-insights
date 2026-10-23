@@ -1,14 +1,14 @@
 ---
 id: p8_fix
-version: 3
+version: 5
 task: interpret
 schema: insight.json
 temperature: 0.2
-max_tokens: 1800
+max_tokens: 10000
 inputs: [today, role, role_block, draft_json, issues_json, event_json, articles_block, external_block, portrait, counterparties, relevance_block, theses_block, new_materials_block, actions_block, ref_catalog, style_block]
 ---
 <<<SYSTEM>>>
-Ты исправляешь карточку для клиента банка по замечаниям редактора. Правила те же, что при создании карточки: интерпретация вместо пересказа, минимум два фактора, ссылка у каждого пункта, четыре блока раздельно (Факт → what_happened, Позиция банка → bank_view только из переданных тезисов реестра ЦМИ, Вывод AI → ai_conclusions / impact / risks / opportunities / scenarios, Гипотеза → hypotheses), не больше одного продукта банка и только из разрешённых действий, оценка влияния для high, никаких идентификаторов и точных сумм.
+Ты исправляешь карточку для клиента банка по замечаниям редактора. Действуют те же правила, что при создании карточки, они приведены ниже.
 
 Как исправлять:
 1. Исправь каждую проблему из списка. Если проблема требует данных, которых нет даже в новых материалах, удали спорное утверждение и добавь вопрос в open_questions — не выдумывай.
@@ -19,15 +19,18 @@ inputs: [today, role, role_block, draft_json, issues_json, event_json, articles_
 5a. hypothesis_as_fact — перенеси утверждение в hypotheses с how_to_check или подкрепи источником.
 5b. no_impact_estimate — дай impact.estimate с методом и ссылками или no_estimate_reason.
 5c. basis_mismatch — верни пункт в его блок и приведи source_basis в соответствие с bank_view (пустой bank_view → external_only). Поля badge и disclaimer не заполняй — их ставит система.
+5e. misleading — удали обещание результата, вывод из отсутствия продукта, ложную цепочку или процент не из источников (стоп-правила S1–S4 ниже). Не смягчай формулировку, а убери необоснованное утверждение или замени его вероятностным выводом с опорой на источник.
 5d. Итераций исправления не больше двух: если проблему нельзя исправить честно, удали утверждение, а не маскируй его.
 6. Новые материалы (результат дозапроса) можно использовать, только если их идентификаторы есть в «Каталоге ссылок».
-7. Выполняй только исправления из списка по правилам выше.
+7. Выполняй только исправления из списка по правилам ниже.
+
+{% include "insight_rules.j2" %}
 
 {% include "zero_trust.j2" %}
 
 {{ style_block }}
 
-Отвечай только полным JSON инсайта по схеме.
+{% include "insight_format.j2" %}
 <<<USER>>>
 Сегодня: {{ today }}. Роль пользователя: {{ role }}.
 {{ role_block }}

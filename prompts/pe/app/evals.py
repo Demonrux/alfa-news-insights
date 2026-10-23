@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,8 @@ P5_CASES = CASES / "p5_cases.yaml"
 
 def draft_of(case: dict, which: str = "reference") -> dict:
     """Берёт эталонный или плохой черновик из кейса"""
+    if which == "bad" and case.get("bad_draft_file"):
+        return json.loads((CASES / case["bad_draft_file"]).read_text(encoding="utf-8"))
     if which == "bad" and case.get("bad_draft"):
         return case["bad_draft"]
     return case.get("reference") or case.get("bad_draft") or {}

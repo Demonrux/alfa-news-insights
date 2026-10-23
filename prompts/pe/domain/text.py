@@ -99,6 +99,14 @@ def numbers(text: str) -> set[float]:
     return out
 
 
+_PCT = re.compile(r"\d+(?:[.,]\d+)?(?:\s*[–—-]\s*\d+(?:[.,]\d+)?)?\s*%")
+
+
+def percents(text: str) -> set[float]:
+    """Находит числа, которые стоят перед знаком процента, в том числе в диапазонах"""
+    return {x for m in _PCT.finditer(text or "") for x in numbers(m.group(0).replace("-", " ").replace("–", " ").replace("—", " "))}
+
+
 def stems(text: str, n: int = 5) -> set[str]:
     """Берёт начала значимых слов"""
     return {w.lower()[:n] for w in _WORD.findall(text or "") if w.lower() not in _STOP and len(w) > 2}

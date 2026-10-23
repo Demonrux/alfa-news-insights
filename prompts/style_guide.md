@@ -1,6 +1,6 @@
 ---
 id: style_guide
-version: 2
+version: 3
 note: Блок между маркерами BLOCK вставляется в P5, P8, P12 как style_block. Списки FORBIDDEN и LIMITS читает pe.domain.checks.
 ---
 <!-- BLOCK START -->
@@ -29,7 +29,6 @@ FORBIDDEN:
 - играет важную роль
 - необходимо проанализировать ситуацию
 - не является инвестиционной рекомендацией
-- гарантированно
 - срочно
 
 LIMITS:

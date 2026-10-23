@@ -18,7 +18,7 @@ python -m prompts.pe theses verify                       # 56 цитат рее�
 prompts/                      зона Prompt Engineering
   p*.md, style_guide.md       промпты и стиль
   schemas/                    JSON-схемы ответов (контракт с backend и frontend)
-  templates/                  шаблоны: портрет, контрагенты, Zero Trust
+  templates/                  шаблоны: портрет, контрагенты, Zero Trust, общие правила и форма карточки для P5 и P8
   *.yaml, *.csv               таксономия, признаки, действия, дисклеймеры, реестр тезисов ЦМИ
   cases/                      тест-кейсы промптов (yaml)
   reports_text/               тексты отчётов ЦМИ после OCR
