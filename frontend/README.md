@@ -14,6 +14,13 @@ npm run build && npm run start   # боевая сборка
 npm run lint
 ```
 
+Вместе с бэкендом, из корня репозитория (нужен Docker):
+
+```bash
+docker compose up --build frontend   # http://localhost:3000
+docker compose up --build             # фронт, API и база
+```
+
 Нужен Node.js 20 или новее (проверено на 24). Бэкенд для запуска не нужен: пока адрес API не задан
 (`NEXT_PUBLIC_API_URL` в `.env`), фронт работает на моках.
 
