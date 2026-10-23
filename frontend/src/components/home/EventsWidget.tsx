@@ -28,7 +28,7 @@ export function EventsWidget() {
           </h2>
           <p className="muted m-0 text-[14px] leading-5">
             Три главных события для {company?.name}. Выводы для роли «{roleName(role)}».{" "}
-            <button type="button" className="lnk !p-0 !text-[14px]" onClick={() => setRoleOpen(true)} aria-haspopup="dialog">
+            <button type="button" className="lnk !min-h-6 !p-0 !text-[14px]" onClick={() => setRoleOpen(true)} aria-haspopup="dialog">
               Сменить
             </button>
           </p>

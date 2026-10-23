@@ -13,7 +13,7 @@ export function RoleDialog({ onClose }: { onClose: () => void }) {
   const [picked, setPicked] = useState<RoleCode>(uiRole(role));
 
   return (
-    <Dialog title={`Ваша роль в ${company?.name ?? "компании"}`} onClose={onClose} labelId="role-title">
+    <Dialog title={`Ваша роль в ${company?.name ?? "компании"}`} onClose={onClose} labelId="role-title" initialFocus="input:checked">
       <p className="muted m-0 text-[14px] leading-5">
         Запомним для этой компании. От роли зависят выводы в карточках. На доступ к банку она не влияет.
       </p>

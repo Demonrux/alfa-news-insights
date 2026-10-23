@@ -32,7 +32,14 @@ export function ContactDialog({
 
   async function send() {
     setBusy(true);
-    await submitContact(cardId, kind, comment);
+    try {
+      await submitContact(cardId, kind, comment);
+    } catch {
+      // Окно остаётся открытым с введённым комментарием: можно отправить ещё раз
+      setBusy(false);
+      toast("Не удалось отправить заявку. Попробуйте ещё раз");
+      return;
+    }
     toast("Заявка отправлена менеджеру", { label: "Отменить", run: () => toast("Заявка отозвана") });
     onClose();
   }

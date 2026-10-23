@@ -146,7 +146,7 @@ export function InsightView({ env }: { env: CardEnvelope }) {
               {env.criticPassed ? (
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 font-semibold text-[#1d5bbf] hover:underline"
+                  className="inline-flex min-h-6 items-center gap-1.5 font-semibold text-[#1d5bbf] hover:underline"
                   onClick={() => setDerivation(true)}
                 >
                   <Icon name="shield" size={16} />

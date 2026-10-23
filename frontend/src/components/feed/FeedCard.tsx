@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { ImpactLevel, TypeBadge } from "@/components/ui/badges";
@@ -19,9 +19,25 @@ export function FeedCard({
   onIrrelevant: () => void;
 }) {
   const [menu, setMenu] = useState(false);
+  const root = useRef<HTMLElement>(null);
+
+  // Меню закрывается по клику снаружи и по Esc
+  useEffect(() => {
+    if (!menu) return;
+    const outside = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setMenu(false);
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [menu]);
 
   return (
-    <article className="feed-card">
+    <article ref={root} className="feed-card">
       <div className="flex flex-wrap items-center gap-3">
         <TypeBadge type={item.overallImpact} />
         <ImpactLevel level={item.materiality} />

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { getRejected } from "@/lib/api";
+import { useModal } from "@/lib/useModal";
 import { FEATURE_LABEL, SOURCE_KIND_LABEL } from "@/lib/labels";
 import { formatDate } from "@/lib/format";
 import { collectSources } from "./sources";
@@ -27,11 +28,8 @@ export function DerivationPanel({ env, onClose }: { env: CardEnvelope; onClose: 
     if (jury) getRejected().then(setRejected);
   }, [jury]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const panel = useRef<HTMLElement>(null);
+  useModal(panel, onClose);
 
   const features = env.card.why_relevant;
   const bankCount = sources.filter((s) => s.kind === "bank_report").length;
@@ -39,7 +37,7 @@ export function DerivationPanel({ env, onClose }: { env: CardEnvelope; onClose: 
   return (
     <>
       <button type="button" className="panel-back" aria-label="Закрыть панель" onClick={onClose} />
-      <aside className="panel" role="dialog" aria-modal="true" aria-labelledby="dp-title">
+      <aside ref={panel} className="panel" role="dialog" aria-modal="true" aria-labelledby="dp-title">
         <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
           <div>
             <h2 id="dp-title" className="m-0 mb-1.5 text-[24px] leading-8 font-bold">

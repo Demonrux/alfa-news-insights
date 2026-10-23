@@ -6,6 +6,7 @@ import { Button } from "@alfalab/core-components/button";
 import { Input } from "@alfalab/core-components/input";
 import { PasswordInput } from "@alfalab/core-components/password-input";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Dialog } from "@/components/ui/Dialog";
 import { useSession } from "@/lib/session";
 
 const OTHER_WAYS: { label: string; icon: IconName }[] = [
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     if (ready && authed) router.replace("/");
@@ -38,9 +40,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col bg-white px-4 pt-4 pb-8">
       <header className="flex items-center justify-between">
         <span className="logo" role="img" aria-label="Логотип, заглушка" />
-        <a href="#" className="px-3 py-2 text-[18px] font-medium" onClick={(e) => e.preventDefault()}>
+        <button type="button" className="border-0 bg-transparent px-3 py-2 text-[18px] font-medium hover:underline" onClick={() => setHelpOpen(true)}>
           Помощь
-        </a>
+        </button>
       </header>
 
       <main className="flex flex-1 items-center justify-center py-12">
@@ -54,6 +56,8 @@ export default function LoginPage() {
             type="tel"
             block
             size={56}
+            placeholder=" "
+            inputClassName="login-empty-caret"
             value={phone}
             onChange={(_, { value }) => setPhone(value)}
             autoComplete="tel"
@@ -62,6 +66,8 @@ export default function LoginPage() {
             label="Пароль"
             block
             size={56}
+            placeholder=" "
+            className="login-password"
             value={password}
             onChange={(_, { value }) => setPassword(value)}
             autoComplete="current-password"
@@ -86,7 +92,7 @@ export default function LoginPage() {
             key={w.label}
             href="#"
             onClick={(e) => e.preventDefault()}
-            className="flex w-24 flex-col items-center gap-2.5 text-[14px] font-semibold"
+            className="flex w-28 flex-col items-center gap-2.5 text-center text-[14px] leading-5 font-semibold whitespace-nowrap"
           >
             <span className="grid size-12 place-items-center rounded-full bg-field">
               <Icon name={w.icon} size={22} />
@@ -95,6 +101,14 @@ export default function LoginPage() {
           </a>
         ))}
       </nav>
+
+      {helpOpen ? (
+        <Dialog title="Помощь со входом" onClose={() => setHelpOpen(false)}>
+          <p className="muted m-0 text-[15px] leading-[22px]">
+            В демо-режиме подойдут любые данные. После входа компанию можно сменить в шапке.
+          </p>
+        </Dialog>
+      ) : null}
     </div>
   );
 }

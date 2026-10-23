@@ -1,35 +1,26 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useModal } from "@/lib/useModal";
 import { Icon } from "./Icon";
 
-/** Модальное окно: закрывается по Esc и клику на фон, фокус уходит внутрь и возвращается назад */
+/** Модальное окно: закрывается по Esc и клику на фон, фокус остаётся внутри и возвращается назад */
 export function Dialog({
   title,
   onClose,
   children,
   labelId = "dlg-title",
+  initialFocus = "textarea, input, button:not(.dlg-x)",
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   labelId?: string;
+  /** Селектор элемента, на который встаёт фокус при открытии */
+  initialFocus?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const prev = document.activeElement as HTMLElement | null;
-    const first = ref.current?.querySelector<HTMLElement>("textarea, input, button:not(.dlg-x)");
-    first?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      prev?.focus();
-    };
-  }, [onClose]);
+  useModal(ref, onClose, initialFocus);
 
   return (
     <div className="dlg-back" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>

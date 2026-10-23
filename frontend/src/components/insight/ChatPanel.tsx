@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { ClaimLabel } from "@/components/ui/badges";
 import { Icon } from "@/components/ui/Icon";
 import { CHAT_BASIS_LABEL } from "@/lib/labels";
+import { useModal } from "@/lib/useModal";
 import type { CardEnvelope } from "@/lib/types";
 
 interface Message {
+  id: number;
   from: "me" | "bot";
   text: string;
   basis?: string;
@@ -47,17 +49,25 @@ export function ChatPanel({
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const end = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLElement>(null);
   const seeded = useRef(false);
+  const nextId = useRef(0);
+  const timers = useRef<number[]>([]);
+  useModal(panel, onClose, "#chat-q");
 
   function ask(text: string) {
     const t = text.trim();
     if (!t) return;
+    const pendingId = ++nextId.current;
     setDraft("");
-    setMessages((m) => [...m, { from: "me", text: t }, { from: "bot", text: "", pending: true }]);
-    setTimeout(() => {
-      const r = mockReply(env, t);
-      setMessages((m) => [...m.slice(0, -1), { from: "bot", text: r.answer, basis: r.basis }]);
-    }, 900);
+    setMessages((m) => [...m, { id: ++nextId.current, from: "me", text: t }, { id: pendingId, from: "bot", text: "", pending: true }]);
+    // Ответ заменяет именно свой индикатор: вопросы можно задавать подряд, не дожидаясь ответа
+    timers.current.push(
+      window.setTimeout(() => {
+        const r = mockReply(env, t);
+        setMessages((m) => m.map((x) => (x.id === pendingId ? { id: pendingId, from: "bot", text: r.answer, basis: r.basis } : x)));
+      }, 900),
+    );
   }
 
   useEffect(() => {
@@ -69,21 +79,23 @@ export function ChatPanel({
   }, [seed]);
 
   useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(window.clearTimeout);
+  }, []);
+
+  useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
   }, [messages]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const suggestions = [...env.card.open_questions, "Как это выглядит для казначея?"].slice(0, 3);
+  const suggestions = [
+    ...env.card.open_questions,
+    ...(env.card.role === "treasurer" ? [] : ["Как это выглядит для казначея?"]),
+  ].slice(0, 3);
 
   return (
     <>
       <button type="button" className="panel-back" aria-label="Закрыть чат" onClick={onClose} />
-      <aside className="panel !w-[480px]" role="dialog" aria-modal="true" aria-labelledby="ch-title">
+      <aside ref={panel} className="panel !w-[480px]" role="dialog" aria-modal="true" aria-labelledby="ch-title">
         <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3">
           <h2 id="ch-title" className="m-0 text-[22px] leading-7 font-bold">
             Уточнить
@@ -100,18 +112,18 @@ export function ChatPanel({
           {messages.length === 0 ? (
             <p className="muted m-0 text-[14px]">Спросите про срок, другой разрез или влияние на конкретные платежи.</p>
           ) : null}
-          {messages.map((m, i) =>
+          {messages.map((m) =>
             m.from === "me" ? (
-              <div key={i} className="max-w-[85%] self-end rounded-2xl rounded-br-sm bg-accent px-4 py-3 text-[15px] leading-[22px] text-white">
+              <div key={m.id} className="max-w-[85%] self-end rounded-2xl rounded-br-sm bg-accent px-4 py-3 text-[15px] leading-[22px] text-white">
                 {m.text}
               </div>
             ) : m.pending ? (
-              <div key={i} className="claim claim--ai flex-row items-center gap-2.5 self-start !p-4">
+              <div key={m.id} className="claim claim--ai flex-row items-center gap-2.5 self-start !p-4">
                 <span className="size-4 animate-spin rounded-full border-2 border-[#d2d3d9] border-t-[#1d5bbf]" aria-hidden="true" />
                 <span className="muted text-[14px]">Сверяем с аналитикой банка…</span>
               </div>
             ) : (
-              <div key={i} className="claim claim--ai max-w-[92%] self-start !p-4 text-[15px] leading-[22px]">
+              <div key={m.id} className="claim claim--ai max-w-[92%] self-start !p-4 text-[15px] leading-[22px]">
                 <ClaimLabel type="ai" />
                 <span>{m.text}</span>
                 {m.basis ? (
@@ -129,13 +141,13 @@ export function ChatPanel({
         </div>
 
         <div className="flex flex-col gap-2.5 border-t border-line-2 px-5 pt-3 pb-4">
-          <div className="sugs flex gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex flex-wrap gap-1.5">
             {suggestions.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => ask(s)}
-                className="inline-flex h-[34px] shrink-0 items-center rounded-full border border-line bg-white px-3 text-[14px] whitespace-nowrap hover:bg-field"
+                className="inline-flex min-h-[34px] items-center rounded-[17px] border border-line bg-white px-3 py-1.5 text-left text-[14px] leading-5 transition-colors hover:bg-field"
               >
                 {s}
               </button>
