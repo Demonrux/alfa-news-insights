@@ -1,0 +1,23 @@
+# Тест-кейсы P14 (сводка). Карточки берутся из reference кейсов p5_cases.yaml.
+# Сценарий: пользователь-физлицо с доступом к нескольким компаниям (как в интернет-банке).
+kind: p14
+cases:
+  - id: week_cfo_multi_company
+    role: cfo
+    period: week
+    today: "2026-09-18"
+    cards:
+      - {card_id: "card:rate-construction", company: "строительная компания группы", from_case: rate_cfo_construction}
+      - {card_id: "card:retail-distributor", company: "оптовый дистрибьютор продуктов", from_case: retail_cfo_distributor_graph}
+      - {card_id: "card:sanctions-steel", company: "металлургическая компания", from_case: sanctions_ceo_steel_exporter}
+    mock:
+      p14_digest:
+        title: "Деньги остаются дорогими, а спрос в рознице слабеет"
+        period: week
+        summary: "Ставка останется на уровне 14% до конца года, поэтому процентные расходы не снизятся. Одновременно замедляется розница, от которой зависит больше половины поступлений дистрибьютора."
+        top:
+          - {card_id: "card:rate-construction", why_now: "До заседания ЦБ 23 октября стоит пересчитать процентные расходы"}
+          - {card_id: "card:retail-distributor", why_now: "Сроки оплаты от сетей могут вырасти уже в четвёртом квартале"}
+        watch:
+          - {what: "Решение ЦБ по ставке", when: "23 октября", why: "Определит стоимость долга до конца года", source_ids: ["T-RATE-02"]}
+        role: cfo

@@ -1,0 +1,82 @@
+# Правила «следующего действия» и нативных продуктов банка.
+# Уточнение заказчика (Q&A 20.10.2026): продажи и кросс-продажи — не смысл решения, цель — лояльность.
+# Поэтому: не больше одного продукта на карточку, только по сработавшему правилу, всегда с понятным CTA.
+# CTA (как связаться): contact_manager — написать менеджеру (уходит в чат с менеджером),
+#                      request — оставить заявку, callback — заказать обратный звонок.
+# Черновик для Product: он утверждает формулировки, PE встраивает в P5 через pe.app.context.allowed_actions().
+# Модель НЕ выбирает продукт сама: в P5 передаются только правила, сработавшие для пары «событие × компания».
+# when.factor — фактор события; when.effect — эффект из матрицы; when.feature — признак, который должен быть = 1.
+
+version: 1
+rules:
+  - id: A-RATE-DEBT
+    when: {factor: KEY_RATE, effect: risk, feature: CL_PRODUCT_LOA_MARK}
+    action: "Обсудить с менеджером банка график рефинансирования и возможность зафиксировать ставку по части долга"
+    product: "кредитование"
+    cta: contact_manager
+    roles: [cfo, treasurer, owner, ceo]
+
+  - id: A-RATE-LEASE
+    when: {factor: KEY_RATE, effect: risk, feature: CL_PRODUCT_LEA_MARK}
+    action: "Пересчитать стоимость новых лизинговых сделок при ставке на текущем уровне до конца года"
+    product: "лизинг"
+    cta: contact_manager
+    roles: [cfo]
+
+  - id: A-RATE-DEP
+    when: {factor: KEY_RATE, effect: opportunity, feature: CL_PRODUCT_DEP_MARK}
+    action: "Проверить условия размещения свободной ликвидности на срок до конца года"
+    product: "депозиты"
+    cta: contact_manager
+    roles: [treasurer, cfo]
+
+  - id: A-DEBT-DEP
+    when: {factor: CREDIT_DEBT_MARKET, effect: opportunity, feature: CL_PRODUCT_DEP_MARK}
+    action: "Сравнить депозит с инструментами денежного рынка для размещения резерва ликвидности"
+    product: "депозиты"
+    cta: contact_manager
+    roles: [treasurer]
+
+  - id: A-FX
+    when: {factor: FX, feature: FTS_FLAG}
+    action: "Оценить открытую валютную позицию по контрактам и обсудить инструменты хеджирования курса"
+    product: "ВЭД и валютный контроль"
+    cta: contact_manager
+    roles: [treasurer, cfo, chief_accountant]
+
+  - id: A-SANCTIONS
+    when: {factor: SANCTIONS_TRADE, feature: FTS_FLAG}
+    action: "Проверить маршруты платежей по внешнеторговым контрактам и запасные варианты расчётов"
+    product: "ВЭД и валютный контроль"
+    cta: contact_manager
+    roles: [treasurer, ceo, owner, c_level]
+
+  - id: A-FACTORING
+    when: {factor: CORPORATE_EVENT, feature: FACTORING_MARK}
+    action: "Проверить концентрацию дебиторской задолженности на покупателях из затронутой отрасли"
+    product: "факторинг"
+    cta: contact_manager
+    roles: [cfo, treasurer]
+
+  - id: A-FACTORING-IND
+    when: {factor: INDUSTRY_EVENT, feature: FACTORING_MARK}
+    action: "Проверить сроки оплаты от покупателей из затронутой отрасли и лимиты факторинга по ним"
+    product: "факторинг"
+    cta: contact_manager
+    roles: [cfo, treasurer, c_level]
+
+  - id: A-GUARANTEE
+    when: {factor: GOV_SPENDING, feature: CL_PRODUCT_GAR_MARK}
+    action: "Оценить потребность в гарантиях под новые госконтракты после публикации параметров бюджета"
+    product: "банковские гарантии"
+    cta: contact_manager
+    roles: [ceo, cfo, owner, c_level]
+
+  - id: A-PAYROLL
+    when: {factor: LABOR_MARKET, feature: CL_PRODUCT_ZPP_MARK}
+    action: "Заложить в бюджет на следующий год сценарий роста фонда оплаты труда"
+    product: null
+    cta: null
+    roles: [cfo, ceo, chief_accountant]
+
+# Действия без продукта (аналитические) модель формулирует сама — правило нужно только для продуктов.

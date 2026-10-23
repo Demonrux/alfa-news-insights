@@ -1,0 +1,151 @@
+{
+  "type": "object",
+  "properties": {
+    "pass": {
+      "type": "boolean"
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "grounding": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "personalization": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "not_retelling": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "bank_view_correct": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "actionability": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        }
+      },
+      "required": [
+        "grounding",
+        "personalization",
+        "not_retelling",
+        "bank_view_correct",
+        "actionability"
+      ],
+      "additionalProperties": false
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "item_index": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "no_source",
+              "invalid_source",
+              "contradiction",
+              "fabricated_bank_view",
+              "stale_bank_view",
+              "retelling",
+              "generic",
+              "wrong_fact",
+              "single_factor",
+              "no_personalization",
+              "wrong_role",
+              "wrong_product",
+              "forbidden_phrase",
+              "too_long",
+              "sensitive_data",
+              "schema",
+              "injection_followed",
+              "hypothesis_as_fact",
+              "no_impact_estimate",
+              "basis_mismatch",
+              "too_many_products",
+              "misleading"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "blocker",
+              "major",
+              "minor"
+            ]
+          },
+          "fix": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "field",
+          "item_index",
+          "type",
+          "severity",
+          "fix"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "need_more_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "enum": [
+              "get_profile",
+              "get_counterparties",
+              "get_event",
+              "search_news",
+              "search_alfa_research",
+              "get_macro"
+            ]
+          },
+          "args": {
+            "type": "object"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "tool",
+          "args"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "pass",
+    "scores",
+    "issues",
+    "need_more_data"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "critic.json",
+  "title": "Вердикт критика — выход P7 и pe.domain.checks"
+}

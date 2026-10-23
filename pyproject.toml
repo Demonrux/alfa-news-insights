@@ -1,8 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "alfa-news-insights"
 version = "0.1.0"
+description = "Personalized business news insights prototype"
 requires-python = ">=3.11"
+dependencies = [
+  "feedparser==6.0.*",
+  "SQLAlchemy==2.0.*",
+  "psycopg[binary]==3.2.*",
+  "pandas>=2.3.3",
+  "python-dotenv==1.0.*",
+  "openai==1.54.*",
+  "fastapi==0.115.*",
+  "uvicorn==0.32.*",
+  "pydantic==2.*",
+  "httpx==0.27.*",
+  "certifi>=2024",
+  "trafilatura>=2.0",
+  "PyYAML>=6.0",
+  "Jinja2>=3.1",
+  "jsonschema>=4.20",
+  "tqdm>=4.66.0",
+]
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+ml = ["sentence-transformers>=3.0"]
+
+[tool.setuptools.packages.find]
+include = ["prompts*", "llm*", "backend*", "ml*"]
+
+[tool.setuptools.package-data]
+prompts = ["**/*.md", "**/*.yaml", "**/*.json", "**/*.csv", "**/*.txt", "**/*.j2"]
+llm = ["*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["prompts/pe/tests", "llm/agent/tests"]
+pythonpath = ["."]

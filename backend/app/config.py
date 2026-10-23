@@ -13,8 +13,11 @@ else:
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5433/alfa")
 
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
+LLM_BASE_URL = (
+    os.getenv("LLM_API_BASE")
+    or os.getenv("LLM_BASE_URL")
+    or "https://changellenge.up.railway.app/v1"
+)
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "gemma-4-26b-a4b")
+LLM_MODEL = os.getenv("LLM_MODEL", "z-ai/glm-5.3-flash")
 LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "60"))
-

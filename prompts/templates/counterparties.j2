@@ -1,0 +1,19 @@
+{% if not c.buyers and not c.suppliers and not c.affiliates %}
+Данных о контрагентах по платежам нет.
+{% else %}
+{% if c.buyers %}
+Покупатели (поступления на счета компании): {{ c.buyers_count_text }}, на них около {{ c.buyers_share }} поступлений.
+{% for g in c.buyers %}
+- {{ g.line }}
+{% endfor %}
+{% endif %}
+{% if c.suppliers %}
+Поставщики (платежи компании): {{ c.suppliers_count_text }}, на них около {{ c.suppliers_share }} платежей.
+{% for g in c.suppliers %}
+- {{ g.line }}
+{% endfor %}
+{% endif %}
+{% if c.affiliates %}
+Связанные компании (группа или общие физлица): {{ c.affiliates | join("; ") }}.
+{% endif %}
+{% endif %}

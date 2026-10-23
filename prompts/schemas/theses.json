@@ -1,0 +1,95 @@
+{
+  "type": "object",
+  "properties": {
+    "theses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "factors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "KEY_RATE",
+                "INFLATION",
+                "FX",
+                "SANCTIONS_TRADE",
+                "COMMODITIES",
+                "TAX_REGULATION",
+                "GOV_SPENDING",
+                "CONSUMER_DEMAND",
+                "LABOR_MARKET",
+                "CREDIT_DEBT_MARKET",
+                "ECONOMIC_GROWTH",
+                "LOGISTICS",
+                "INDUSTRY_EVENT",
+                "REGIONAL_EVENT",
+                "CORPORATE_EVENT"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "okved_hints": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{2}$"
+            }
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "stable",
+              "mixed",
+              "unclear"
+            ]
+          },
+          "thesis": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "forecast": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "horizon": {
+            "type": "string",
+            "enum": [
+              "short",
+              "medium",
+              "long"
+            ]
+          }
+        },
+        "required": [
+          "factors",
+          "okved_hints",
+          "direction",
+          "thesis",
+          "forecast",
+          "quote",
+          "horizon"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "theses"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "theses.json",
+  "title": "Тезисы отчёта ЦМИ — выход P3"
+}
