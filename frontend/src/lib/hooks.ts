@@ -5,7 +5,6 @@ import * as api from "./api";
 import { useSession } from "./session";
 import type { CardEnvelope, FeedItem } from "./types";
 
-/** Состояние для показа на демо: ?demo=denied | limit | error | empty */
 export function readDemo(): api.DemoState {
   if (typeof window === "undefined") return null;
   const v = new URLSearchParams(window.location.search).get("demo");
@@ -17,10 +16,6 @@ export type LoadState<T> =
   | { status: "ready"; data: T }
   | { status: "error"; error: api.ApiError | Error };
 
-/**
- * Загрузка данных по ключу. Результат хранится вместе с ключом запроса: пока ключ другой, показываем
- * «загрузка», и не нужно сбрасывать состояние внутри эффекта. reload() делает новый запрос с тем же ключом.
- */
 function useLoad<T>(key: string | null, load: () => Promise<T>) {
   const [nonce, setNonce] = useState(0);
   const [result, setResult] = useState<{ key: string; value: LoadState<T> } | null>(null);
@@ -35,8 +30,6 @@ function useLoad<T>(key: string | null, load: () => Promise<T>) {
     return () => {
       live = false;
     };
-    // load меняется вместе с ключом, поэтому отдельно в зависимости его не включаем
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullKey]);
 
   const state: LoadState<T> = result && result.key === fullKey ? result.value : { status: "loading" };
@@ -44,7 +37,6 @@ function useLoad<T>(key: string | null, load: () => Promise<T>) {
   return { state, reload };
 }
 
-/** Лента событий выбранной компании и роли. При смене компании или роли загружается заново */
 export function useFeed() {
   const { company, role, switching } = useSession();
   const companyId = company?.id ?? null;
@@ -55,8 +47,12 @@ export function useFeed() {
   return { state, loading, reload };
 }
 
-/** Одна карточка для выбранной роли */
 export function useCard(id: string) {
-  const { role } = useSession();
-  return useLoad<CardEnvelope>(`${id}:${role}`, () => api.getCard(id, role, readDemo()));
+  const { role, company } = useSession();
+  const companyId = company?.id ?? null;
+
+  return useLoad<CardEnvelope>(
+    companyId ? `${id}:${role}:${companyId}` : null,
+    () => api.getCard(id, role, companyId as string, readDemo())
+  );
 }

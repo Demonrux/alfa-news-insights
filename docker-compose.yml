@@ -24,6 +24,7 @@ services:
       dockerfile: backend/Dockerfile
     command: >
       sh -c "python backend/scripts/run_load_data.py && python backend/scripts/run_parsing.py && python backend/scripts/run_demo.py"
+    env_file: .env
     environment:
       - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/alfa
       - TQDM_DISABLE=1
@@ -40,9 +41,10 @@ services:
     container_name: alfa-api
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
       - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/alfa
-      - LLM_API_KEY=${LLM_API_KEY}
+      - PYTHONUNBUFFERED=1
     depends_on:
       db:
         condition: service_healthy
@@ -55,7 +57,7 @@ services:
       context: ./frontend
       args:
         # Пока пусто: фронт работает на моках. Когда API готов, указать http://localhost:8000
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     container_name: alfa-frontend
     ports:
       - "3000:3000"

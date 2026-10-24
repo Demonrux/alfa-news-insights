@@ -1,21 +1,21 @@
 classify: google/gemma-4-26b-a4b-it
-theses: z-ai/glm-5.3-flash
-planner: z-ai/glm-5.3-flash
+theses: qwen/qwen3.6-35b-a3b            # было z-ai/glm-5.3-flash
+planner: qwen/qwen3.6-35b-a3b           # было z-ai/glm-5.3-flash
 interpret: qwen/qwen3.6-35b-a3b
 critic: qwen/qwen3.6-35b-a3b
 chat: qwen/qwen3.6-35b-a3b
 judge: moonshotai/kimi-k2.6
-digest: z-ai/glm-5.3-flash
+digest: qwen/qwen3.6-35b-a3b            # было z-ai/glm-5.3-flash
 
 fallback:
   classify: qwen/qwen3.6-35b-a3b
-  interpret: z-ai/glm-5.3-flash
-  critic: z-ai/glm-5.3-flash
-  planner: qwen/qwen3.6-35b-a3b
-  chat: z-ai/glm-5.3-flash
-  theses: qwen/qwen3.6-35b-a3b
+  interpret: google/gemma-4-26b-a4b-it  # было z-ai/glm-5.3-flash
+  critic: google/gemma-4-26b-a4b-it     # было z-ai/glm-5.3-flash
+  planner: google/gemma-4-26b-a4b-it    # было qwen
+  chat: google/gemma-4-26b-a4b-it       # было z-ai/glm-5.3-flash
+  theses: google/gemma-4-26b-a4b-it     # было qwen
   judge: deepseek/deepseek-v4.1-flash
-  digest: qwen/qwen3.6-35b-a3b
+  digest: google/gemma-4-26b-a4b-it     # было qwen
 
 # Other approved models available for manual task reassignment:
 # google/gemma-4-26b-a4b-it

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from llm.agent import InsightRejected, NotRelevant, PipelineError, Trace, run_insight_pipeline
@@ -12,7 +12,8 @@ from prompts.pe.domain.model import NotEligible
 from prompts.pe.infra.llm import BudgetExceeded
 
 
-app = FastAPI(title="Alfa News Insights API", version="0.1.0")
+router = APIRouter()
+
 P1_CACHE: dict[str, dict] = {}
 
 
@@ -23,12 +24,7 @@ class CardRequest(BaseModel):
     user_title: str | None = None
 
 
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.post("/cards")
+@router.post("/cards")
 def create_card(body: CardRequest) -> dict[str, Any]:
     """Create one personalized insight card from company and news payloads."""
     trace = Trace()

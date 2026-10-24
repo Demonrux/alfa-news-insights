@@ -207,4 +207,11 @@ export interface Me {
   lastCompanyId: string | null;
 }
 
+export interface RejectedCard {
+  id: string;
+  headline: string;
+  factor: string;
+  issues: string[];
+}
+
 export type FeedbackKind = "useful" | "not_important" | "error";
