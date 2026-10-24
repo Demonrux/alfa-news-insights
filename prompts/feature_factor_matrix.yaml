@@ -1,0 +1,89 @@
+# Матрица «признак компании → фактор влияния».
+# Смысл (effect, explanation) — зона Prompt Engineering; веса — ML (ml/profiles/build_profiles.py).
+# explanation подставляется в «почему вы видите» и в контекст P5, поэтому формулировка — для клиента.
+# weight: high=1.0, medium=0.6, low=0.3
+#
+# Условия:
+#   value: 1                 — флаг установлен
+#   value_in: [...]          — значение из списка
+#   match_event: countries   — срабатывает, только если страна компании есть в событии
+#   match_event: regions     — то же для региона
+#   multiplier: true         — не фактор, а множитель материальности
+
+version: 1
+rules:
+  - {feature: CL_PRODUCT_LOA_MARK, value: 1, factor: KEY_RATE, effect: risk, weight: 1.0,
+     explanation: "использует кредитные продукты — ставка определяет стоимость обслуживания долга"}
+  - {feature: CL_PRODUCT_LOA_MARK, value: 1, factor: CREDIT_DEBT_MARKET, effect: risk, weight: 0.6,
+     explanation: "условия кредитного рынка влияют на рефинансирование долга"}
+  - {feature: CL_PRODUCT_LEA_MARK, value: 1, factor: KEY_RATE, effect: risk, weight: 0.6,
+     explanation: "лизинговые платежи зависят от стоимости фондирования"}
+  - {feature: CL_PRODUCT_LEA_MARK, value: 1, factor: FX, effect: risk, weight: 0.3,
+     explanation: "лизинг техники часто связан с импортом"}
+  - {feature: CL_PRODUCT_DEP_MARK, value: 1, factor: KEY_RATE, effect: opportunity, weight: 0.6,
+     explanation: "размещает средства — высокая ставка сохраняет доходность размещения"}
+  - {feature: CL_PRODUCT_DEP_MARK, value: 1, factor: CREDIT_DEBT_MARKET, effect: opportunity, weight: 0.3,
+     explanation: "доходности рынка определяют условия размещения свободной ликвидности"}
+  - {feature: CL_PRODUCT_GAR_MARK, value: 1, factor: GOV_SPENDING, effect: mixed, weight: 1.0,
+     explanation: "использует банковские гарантии — вероятно, работает по госконтрактам"}
+  - {feature: CL_PRODUCT_GAR_MARK, value: 1, factor: TAX_REGULATION, effect: mixed, weight: 0.3,
+     explanation: "регулирование закупок влияет на условия контрактов"}
+  - {feature: CL_PRODUCT_ZPP_MARK, value: 1, factor: LABOR_MARKET, effect: risk, weight: 0.6,
+     explanation: "зарплатный проект — фонд оплаты труда чувствителен к рынку труда"}
+  - {feature: CL_PRODUCT_ZPP_MARK, value: 1, factor: INFLATION, effect: risk, weight: 0.3,
+     explanation: "инфляция повышает зарплатные ожидания сотрудников"}
+  - {feature: FACTORING_MARK, value: 1, factor: CREDIT_DEBT_MARKET, effect: risk, weight: 0.6,
+     explanation: "использует факторинг — зависит от стоимости финансирования дебиторской задолженности"}
+  - {feature: FACTORING_MARK, value: 1, factor: CORPORATE_EVENT, effect: risk, weight: 0.6,
+     explanation: "платёжная дисциплина покупателей критична для оборотного капитала"}
+  - {feature: FTS_FLAG, value: 1, factor: FX, effect: mixed, weight: 1.0,
+     explanation: "ведёт ВЭД — курс влияет на выручку или стоимость закупок"}
+  - {feature: FTS_FLAG, value: 1, factor: SANCTIONS_TRADE, effect: risk, weight: 1.0,
+     explanation: "внешнеторговые ограничения влияют на операции компании"}
+  - {feature: FTS_FLAG, value: 1, factor: LOGISTICS, effect: risk, weight: 0.6,
+     explanation: "ВЭД зависит от маршрутов и стоимости логистики"}
+  - {feature: FTS_COUNTRY_NAME, match_event: countries, factor: SANCTIONS_TRADE, effect: risk, weight: 1.0,
+     explanation: "ведёт ВЭД со страной, упомянутой в событии"}
+  - {feature: REGION, match_event: regions, factor: REGIONAL_EVENT, effect: mixed, weight: 1.0,
+     explanation: "зарегистрирована в регионе, где произошло событие"}
+  - {feature: OKFS_NAME, value_contains: "государств", factor: GOV_SPENDING, effect: mixed, weight: 0.6,
+     explanation: "форма собственности связывает компанию с госполитикой и бюджетом"}
+  - {feature: ECO_MARK_LABEL, value_contains: "рост", factor: ECONOMIC_GROWTH, effect: mixed, weight: 0.6,
+     explanation: "компания на стадии роста чувствительна к деловой активности"}
+  - {feature: ECO_MARK_LABEL, value_contains: "рост", factor: KEY_RATE, effect: risk, weight: 0.3,
+     explanation: "рост бизнеса обычно требует заёмного финансирования"}
+  - {feature: REVENUE_COMPANY, multiplier: true,
+     explanation: "масштаб бизнеса определяет материальность события"}
+  - {feature: GROUP_ID, aggregate: group,
+     explanation: "входит в группу компаний — события у компаний группы касаются и её"}
+
+# Факторы от отрасли (по двузначному ОКВЭД). Полный справочник — ml/profiles/okved_map.yaml.
+okved_factors:
+  "01": [COMMODITIES, FX, SANCTIONS_TRADE, LOGISTICS]
+  "02": [INDUSTRY_EVENT, CREDIT_DEBT_MARKET, SANCTIONS_TRADE]
+  "05": [COMMODITIES, FX, LOGISTICS, SANCTIONS_TRADE]
+  "06": [COMMODITIES, FX, SANCTIONS_TRADE, TAX_REGULATION]
+  "07": [COMMODITIES, FX, SANCTIONS_TRADE]
+  "10": [INFLATION, CONSUMER_DEMAND, COMMODITIES, TAX_REGULATION]
+  "16": [INDUSTRY_EVENT, SANCTIONS_TRADE, FX, CREDIT_DEBT_MARKET]
+  "17": [INDUSTRY_EVENT, SANCTIONS_TRADE, FX]
+  "19": [COMMODITIES, TAX_REGULATION, SANCTIONS_TRADE, INDUSTRY_EVENT]
+  "20": [COMMODITIES, FX, SANCTIONS_TRADE]
+  "23": [CONSUMER_DEMAND, KEY_RATE, INDUSTRY_EVENT]
+  "24": [COMMODITIES, FX, SANCTIONS_TRADE, ECONOMIC_GROWTH]
+  "25": [GOV_SPENDING, KEY_RATE, COMMODITIES]
+  "28": [GOV_SPENDING, KEY_RATE, COMMODITIES, SANCTIONS_TRADE]
+  "29": [CONSUMER_DEMAND, KEY_RATE, FX, TAX_REGULATION]
+  "35": [TAX_REGULATION, COMMODITIES]
+  "41": [KEY_RATE, GOV_SPENDING, COMMODITIES, ECONOMIC_GROWTH]
+  "42": [GOV_SPENDING, KEY_RATE, COMMODITIES]
+  "43": [KEY_RATE, GOV_SPENDING]
+  "45": [CONSUMER_DEMAND, FX, TAX_REGULATION]
+  "46": [FX, SANCTIONS_TRADE, LOGISTICS, CONSUMER_DEMAND]
+  "47": [CONSUMER_DEMAND, INFLATION, FX, LABOR_MARKET, LOGISTICS]
+  "49": [LOGISTICS, COMMODITIES, TAX_REGULATION]
+  "52": [LOGISTICS, INFLATION]
+  "56": [CONSUMER_DEMAND, LABOR_MARKET, INFLATION]
+  "62": [LABOR_MARKET, TAX_REGULATION, FX]
+  "64": [KEY_RATE, CREDIT_DEBT_MARKET]
+  "68": [KEY_RATE, CONSUMER_DEMAND]

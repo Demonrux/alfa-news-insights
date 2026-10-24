@@ -1,0 +1,80 @@
+# Журнал изменений промптов
+
+Формат записи: дата · промпт@версия · что изменили · почему (ссылка на кейс или провал) · метрика до → после.
+
+## 2026-10-20 · стартовые версии (v1)
+
+- p1_classify@v1, p3_theses@v1, p4_planner@v1, p5_interpret@v1, p6_roles@v1, p7_critic@v1, p8_fix@v1,
+  p12_chat@v1, p13_judge@v1 — первые версии, проверены только в режимах dry и mock (рендер, схемы, валидатор).
+- Реестр тезисов: 56 тезисов из 9 отчётов, все цитаты подтверждены `python -m pe.theses verify`.
+  T-CONS-06 и T-STR-11 помечены superseded (прогнозы ставки 13,5% и 14,25% заменены T-RATE-02);
+  R_STEEL (обзор 2021 г.) помечен stale.
+
+## 2026-10-21 · уточнения экспертов (Q&A 20–21.10)
+
+- insight.json: `hypotheses`, `impact`, `source_basis`, `scenarios[].logic/likelihood`, `actions[].cta`, ссылки `ext:`;
+  `ai_conclusions.confidence` только high/medium.
+- critic.json: типы `hypothesis_as_fact`, `no_impact_estimate`, `basis_mismatch`, `too_many_products`, `misleading`.
+- chat.json: поле `basis`. Новая схема digest.json.
+- p5_interpret@v2, p8_fix@v2, p7_critic@v2, p12_chat@v2, style_guide@v2; новый p14_digest@v1.
+- disclaimers.yaml — фиксированные тексты дисклеймеров для интерфейса.
+- Данные: выручка 2025 г. в рублях, заглушки ≤ 1000; CL_TYPE — только Client; NEGATIVEMARK; группа компаний;
+  самопереводы не считаются контрагентами.
+- Эталоны в tests/p5_cases.yaml обновлены под новую схему; плохой черновик ловится по 13 типам ошибок.
+
+## 2026-10-21 · чистая архитектура кода (без изменения промптов)
+
+- Код разложен по слоям `pe/domain` (правила без ввода-вывода), `pe/infra` (файлы, LLM), `pe/app` (контекст, агент, прогоны);
+  одна точка входа `python -m pe`. Контекст промптов для всех кейсов совпадает с прежней версией побайтно.
+- Новое по задачам ролей: `classify_once` — P1 один раз на новость; журнал вызовов LLM и лимит 500 ₽ в день;
+  `ui_notes` — дисклеймер и метка «не позиция банка» в результате `make_card`; очистка CSV, группы, платежи → контрагенты;
+  профиль чувствительности `sensitivity`; метрики `recall@k` и согласие судьи с ручной оценкой; `python -m pe examples`.
+- p14_digest: task `digest` (своя модель в models_default.yaml).
+
+## 2026-10-21 · p6_roles@v2 — все роли целевой аудитории
+
+- Добавлены роли `c_level` (другой руководитель уровня C) и `other` (сотрудник, влияющий на решения): теперь 7 ролей из кейса.
+- Должность пользователя (`user_title`) дописывается к блоку роли; названия ролей для интерфейса — в метаданных p6_roles.md.
+- insight.json, digest.json: enum role расширен. next_actions: `c_level` добавлен в A-SANCTIONS, A-FACTORING-IND, A-GUARANTEE;
+  для `other` продукты банка не предлагаются.
+
+## 2026-10-22 · Zero Trust, четыре блока, пайплайн для FastAPI
+
+- Все промпты: правило Zero Trust (`templates/zero_trust.j2`), новости — в `<untrusted_news>`, отчёты, внешние данные и вопрос
+  чата — в `<untrusted_report>`, `<untrusted_external>`, `<untrusted_question>`. Версии: p1@v2, p3@v2, p4@v2, p5@v3, p7@v3, p8@v3,
+  p12@v3, p13@v2, p14@v2.
+- P5/P7/P8: явные четыре блока (Факт, Позиция банка по реестру ЦМИ, Вывод AI, Гипотеза); вывод AI нельзя подавать как мнение банка
+  (автопроверка `misleading`); P7 проверяет блоки через `basis_mismatch`.
+- insight.json: поля `badge` и `disclaimer` — ставит система; event.json: флаг `injection_suspected`; новый кейс `inj_fake_developer`.
+- Новый пакет `llm/agent`: planner.py, loop.py, trace.py, `run_insight_pipeline(company_data, news_item)`; `pe/app/agent.py` → `pe/app/feed.py`.
+- Метрика до → после: не мерили на живой модели — прогнать `python -m pe run p1_classify prompts/tests/injection_cases.yaml --mode live`.
+
+## 2026-10-22 · рефакторинг кода (промпты не менялись)
+
+- Убраны повторы: общие функции для JSON, главного фактора, порога крупного бизнеса, портрета, переменных критика и сбора
+  инструментов; тестовые данные в одном файле. Длинные функции разбиты, ветвления заменены таблицами. Тесты: 95 из 95.
+
+## 2026-10-22 · YAGNI, SOLID, без преждевременной оптимизации (промпты не менялись)
+
+- Удалён неиспользуемый код и параметры, модули разделены по ответственности, расширение через таблицы; один кэш справочников.
+- `pe/models_default.yaml` → `pe/models.yaml`; шаблон `why_relevant.j2` удалён. Тесты: 95 из 95.
+
+## 2026-10-22 · возвращено то, что нужно для встраивания
+
+- `run_insight_pipeline(event=…)`, `why_line`, `grounding` в трейсе, сводка с должностью пользователя, пути через `PE_PROMPTS_DIR`,
+  `PE_REPORTS_DIR`, `PE_MODELS_FILE`, `PE_RUNS_DIR`. Тесты: 97 из 97.
+
+## 2026-10-22 · раскладка под репозиторий alfa-news-insights
+
+- Код PE переехал в `prompts/pe/` (импорт `prompts.pe`), тест-кейсы — в `prompts/cases/`, тексты отчётов — в `prompts/reports_text/`,
+  OCR — в `prompts/scripts/`, файл моделей — в `llm/models.yaml`, агент — в `llm/agent/` с тестами рядом.
+- Подготовка CSV вынесена из `company.py` в отдельный модуль `dataset.py`. Инструкция — `docs/prompts_llm_integration.md`.
+
+## Шаблон следующей записи
+
+```
+## ГГГГ-ММ-ДД · p5_interpret@v2
+- Что: добавили правило …
+- Почему: на кейсах rate_cfo_construction, retail_cfo_distributor_graph модель писала пересказ в headline (retelling)
+- Метрика: прошли автопроверку 2/5 → 4/5; средний балл судьи 3,1 → 3,8
+```

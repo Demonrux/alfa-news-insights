@@ -1,0 +1,85 @@
+{
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "macro",
+        "market",
+        "industry",
+        "counterparty",
+        "regional",
+        "corporate",
+        "regulatory"
+      ]
+    },
+    "focus_factors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "KEY_RATE",
+          "INFLATION",
+          "FX",
+          "SANCTIONS_TRADE",
+          "COMMODITIES",
+          "TAX_REGULATION",
+          "GOV_SPENDING",
+          "CONSUMER_DEMAND",
+          "LABOR_MARKET",
+          "CREDIT_DEBT_MARKET",
+          "ECONOMIC_GROWTH",
+          "LOGISTICS",
+          "INDUSTRY_EVENT",
+          "REGIONAL_EVENT",
+          "CORPORATE_EVENT"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "enum": [
+              "get_profile",
+              "get_counterparties",
+              "get_event",
+              "search_news",
+              "search_alfa_research",
+              "get_macro"
+            ]
+          },
+          "args": {
+            "type": "object"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "tool",
+          "args",
+          "why"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 6
+    }
+  },
+  "required": [
+    "event_type",
+    "focus_factors",
+    "steps"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan.json",
+  "title": "План агента — выход P4"
+}

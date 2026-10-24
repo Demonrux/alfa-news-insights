@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "properties": {
+    "q1_what_happened": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "q2_why_relevant": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "q3_consequences": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "q4_actions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "q5_bank_view": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "q6_grounding": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "factual_errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      }
+    },
+    "is_retelling": {
+      "type": "boolean"
+    },
+    "comment": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "q1_what_happened",
+    "q2_why_relevant",
+    "q3_consequences",
+    "q4_actions",
+    "q5_bank_view",
+    "q6_grounding",
+    "factual_errors",
+    "is_retelling",
+    "comment"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "judge.json",
+  "title": "Оценка судьи — выход P13"
+}

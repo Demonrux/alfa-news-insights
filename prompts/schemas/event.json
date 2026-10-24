@@ -1,0 +1,261 @@
+{
+  "type": "object",
+  "properties": {
+    "is_business_relevant": {
+      "type": "boolean"
+    },
+    "irrelevance_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 120
+    },
+    "event_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "geography": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "global",
+            "russia",
+            "region",
+            "foreign_country"
+          ]
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "scope",
+        "regions",
+        "countries"
+      ],
+      "additionalProperties": false
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "KEY_RATE",
+              "INFLATION",
+              "FX",
+              "SANCTIONS_TRADE",
+              "COMMODITIES",
+              "TAX_REGULATION",
+              "GOV_SPENDING",
+              "CONSUMER_DEMAND",
+              "LABOR_MARKET",
+              "CREDIT_DEBT_MARKET",
+              "ECONOMIC_GROWTH",
+              "LOGISTICS",
+              "INDUSTRY_EVENT",
+              "REGIONAL_EVENT",
+              "CORPORATE_EVENT"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "stable",
+              "mixed",
+              "unclear"
+            ]
+          },
+          "is_primary": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "code",
+          "direction",
+          "is_primary",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4
+    },
+    "commodities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "oil",
+          "oil_products",
+          "gas",
+          "coal",
+          "gold",
+          "steel",
+          "nonferrous",
+          "fertilizers",
+          "grain",
+          "timber",
+          "other"
+        ]
+      }
+    },
+    "okved_hints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{2}$"
+      }
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "regulator",
+              "government",
+              "company",
+              "country",
+              "organization",
+              "person"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "key_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 20
+                },
+                "what": {
+                  "type": "string",
+                  "maxLength": 80
+                }
+              },
+              "required": [
+                "value",
+                "unit",
+                "what"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "reported",
+              "speculative"
+            ]
+          }
+        },
+        "required": [
+          "fact",
+          "numbers",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 6
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "immediate",
+        "short",
+        "medium",
+        "long",
+        "unclear"
+      ]
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "rumor",
+          "no_numbers",
+          "conflicting_sources",
+          "forecast_only",
+          "outdated",
+          "unverified_source",
+          "injection_suspected"
+        ]
+      }
+    }
+  },
+  "required": [
+    "is_business_relevant",
+    "irrelevance_reason",
+    "title",
+    "event_date",
+    "geography",
+    "factors",
+    "commodities",
+    "okved_hints",
+    "actors",
+    "key_facts",
+    "horizon",
+    "uncertainty_flags"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event.json",
+  "title": "Событие — выход P1"
+}

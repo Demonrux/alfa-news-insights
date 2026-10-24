@@ -1,0 +1,54 @@
+{
+  "embedding": {
+    "queries": 6,
+    "mrr": 0.5972,
+    "recall@1": 0.0833,
+    "recall@3": 0.2389,
+    "recall@5": 0.5639,
+    "per_company": {
+      "U_21915": {
+        "relevant_count": 3,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.6667,
+        "reciprocal_rank": 0.25
+      },
+      "U_9748": {
+        "relevant_count": 4,
+        "recall@1": 0.25,
+        "recall@3": 0.25,
+        "recall@5": 0.75,
+        "reciprocal_rank": 1.0
+      },
+      "U_9250": {
+        "relevant_count": 5,
+        "recall@1": 0.0,
+        "recall@3": 0.4,
+        "recall@5": 0.4,
+        "reciprocal_rank": 0.5
+      },
+      "U_11496": {
+        "relevant_count": 5,
+        "recall@1": 0.0,
+        "recall@3": 0.2,
+        "recall@5": 0.4,
+        "reciprocal_rank": 0.5
+      },
+      "U_142420": {
+        "relevant_count": 4,
+        "recall@1": 0.25,
+        "recall@3": 0.25,
+        "recall@5": 0.5,
+        "reciprocal_rank": 1.0
+      },
+      "U_408263": {
+        "relevant_count": 3,
+        "recall@1": 0.0,
+        "recall@3": 0.3333,
+        "recall@5": 0.6667,
+        "reciprocal_rank": 0.3333
+      }
+    },
+    "embedding_model": "cointegrated/rubert-tiny2"
+  }
+}
