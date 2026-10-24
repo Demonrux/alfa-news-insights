@@ -50,5 +50,16 @@ services:
       - ./data:/data
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Пока пусто: фронт работает на моках. Когда API готов, указать http://localhost:8000
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+    container_name: alfa-frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
 volumes:
   pgdata:
