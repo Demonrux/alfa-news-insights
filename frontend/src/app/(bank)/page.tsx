@@ -5,6 +5,12 @@ import { EventsWidget } from "@/components/home/EventsWidget";
 import { Icon } from "@/components/ui/Icon";
 
 const TABS = ["Сводка", "Счета на главной", "Мультибанк", "Металлы"];
+const QUICK_ACTIONS = [
+  ["Скачать выписку", "download"],
+  ["Импорт платежей", "doc"],
+  ["Создать платёж", "plus"],
+  ["Ещё", null],
+] as const;
 
 /**
  * Главная интернет-банка. Наш модуль здесь один: виджет «События для вашего бизнеса» (точка входа).
@@ -19,32 +25,35 @@ export default function HomePage() {
     <div className="flex flex-col gap-6 !pt-0">
       <h1 className="sr">Главная</h1>
 
-      <div className="flex flex-wrap gap-2.5" role="group" aria-label="Быстрые действия">
-        {["Скачать выписку", "Импорт платежей", "Создать платёж", "Ещё"].map((t, i) => (
+      <div className="flex flex-wrap gap-3" role="group" aria-label="Быстрые действия">
+        {QUICK_ACTIONS.map(([t, icon], i) => (
           <button
             key={t}
             type="button"
-            className={`inline-flex h-10 items-center gap-2.5 rounded-xl px-[18px] text-[15px] font-medium whitespace-nowrap hover:bg-[var(--c-bg-hover)] ${
+            className={`inline-flex h-10 items-center gap-2 rounded-lg px-[18px] text-[14px] font-semibold whitespace-nowrap transition-colors hover:bg-[var(--c-bg-hover)] ${
               i === 3 ? "bg-[var(--c-bg-field-hover)] px-5" : "bg-surface"
             }`}
           >
+            {icon ? <Icon name={icon} size={18} /> : null}
             {t}
           </button>
         ))}
       </div>
 
       <section
-        className="grid gap-3 rounded-[28px] bg-[#121213] p-3 text-white [grid-template-columns:minmax(0,1.85fr)_minmax(0,1fr)_minmax(0,.9fr)] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
+        className="grid gap-3 rounded-[22px] bg-[#121213] p-3 text-white [grid-template-columns:minmax(0,1.85fr)_minmax(0,1fr)_minmax(0,.9fr)] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
         aria-label="Остатки и дела"
       >
-        <div className="flex min-w-0 flex-col rounded-[20px] bg-white/[.07] px-[22px] py-5">
+        <div className="flex min-w-0 flex-col rounded-[16px] bg-white/[.07] px-6 py-5">
           <span className="text-[34px] leading-[42px] font-bold">[Остаток] RUB</span>
           <span className="mt-2 flex items-center gap-1.5 text-[15px] text-white/60">
             <Icon name="chevronRight" size={16} />[Сумма] RUB с овердрафтом
           </span>
-          <span className="mt-3 flex flex-wrap items-center gap-2.5 text-[15px]">
-            [Сумма] CNY <span className="text-white/60">·</span> [Сумма] KZT
-            <span className="counter !bg-white/15">+N</span>
+          <span className="mt-3 flex flex-col items-start gap-1.5 text-[15px]">
+            <span>[Сумма] CNY</span>
+            <span className="flex items-center gap-2.5">
+              [Сумма] KZT <span className="counter !bg-white/15">+N</span>
+            </span>
           </span>
           <span className="min-h-7 flex-1" />
           <div className="flex flex-wrap gap-4 border-t border-white/10 pt-4">
@@ -65,7 +74,7 @@ export default function HomePage() {
             </span>
           </div>
         </div>
-        <div className="flex flex-col gap-1 rounded-[20px] bg-white/[.07] px-[22px] py-5">
+        <div className="flex flex-col gap-1 rounded-[16px] bg-white/[.07] px-6 py-5">
           <h2 className="m-0 mb-2.5 text-[16px] leading-[22px] font-bold">Дела в работе</h2>
           {[
             ["Подписать и отправить", true],
@@ -88,7 +97,7 @@ export default function HomePage() {
       </section>
 
       <div className="flex flex-wrap items-center gap-7">
-        <div role="tablist" aria-label="Разделы главной" className="flex min-w-0 flex-1 gap-7 overflow-x-auto">
+        <div role="tablist" aria-label="Разделы главной" className="flex min-w-0 flex-1 gap-8 overflow-x-auto">
           {TABS.map((t, i) => (
             <button
               key={t}
@@ -96,7 +105,7 @@ export default function HomePage() {
               role="tab"
               aria-selected={tab === i}
               onClick={() => setTab(i)}
-              className={`text-[22px] leading-7 font-bold whitespace-nowrap max-[760px]:text-[18px] ${
+              className={`text-[20px] leading-7 font-semibold tracking-[-0.02em] whitespace-nowrap max-[760px]:text-[18px] ${
                 tab === i ? "text-ink" : "text-[#6e6e76] hover:text-ink-2"
               }`}
             >
@@ -132,7 +141,7 @@ export default function HomePage() {
       {tab === 0 ? (
         <div className="grid grid-cols-3 items-start gap-4 max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1">
           <EventsWidget />
-          <section className="flex min-w-0 flex-col gap-3.5 rounded-[20px] bg-surface p-[22px]">
+          <section className="flex min-w-0 flex-col gap-3.5 rounded-[16px] bg-surface p-6">
             <span className="flex items-center gap-2 text-[16px] leading-[22px] font-bold">
               Активные заявки <span className="chip !px-1.5 !py-0.5 text-[12px] font-bold">N</span>
             </span>
@@ -149,7 +158,7 @@ export default function HomePage() {
               </div>
             ))}
           </section>
-          <section className="flex min-w-0 flex-col gap-3.5 rounded-[20px] bg-surface p-[22px]">
+          <section className="flex min-w-0 flex-col gap-3.5 rounded-[16px] bg-surface p-6">
             <span className="text-[16px] leading-[22px] font-bold">Индикатор риска</span>
             <div
               className="mx-auto mt-1 h-[90px] w-[180px] rounded-t-[180px] border-[12px] border-b-0 border-[var(--c-bg-field)]"
@@ -158,7 +167,7 @@ export default function HomePage() {
             <span className="-mt-2 text-center text-[16px] font-bold">[Уровень риска]</span>
             <span className="muted text-center text-[13px]">[Пояснение к индикатору]</span>
           </section>
-          <section className="flex min-w-0 flex-col gap-3.5 rounded-[20px] bg-surface p-[22px]">
+          <section className="flex min-w-0 flex-col gap-3.5 rounded-[16px] bg-surface p-6">
             <span className="text-[16px] leading-[22px] font-bold">Конвертация</span>
             <table className="w-full border-collapse text-[14px]">
               <thead>
@@ -181,7 +190,7 @@ export default function HomePage() {
           </section>
         </div>
       ) : (
-        <section className="rounded-[20px] bg-surface p-[22px]">
+        <section className="rounded-[16px] bg-surface p-6">
           <span className="text-[16px] font-bold">{TABS[tab]}</span>
           <p className="muted m-0 mt-1 text-[14px]">Раздел банка, в макете не детализирован</p>
         </section>

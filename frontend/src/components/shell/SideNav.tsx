@@ -23,7 +23,7 @@ interface Item {
 const ITEMS: Item[] = [
   { label: "Все сервисы", icon: "grid", lead: true },
   { label: "Заявки", icon: "doc", isNew: true, sepBefore: true },
-  { label: "Аналитика", fullLabel: "Аналитика для бизнеса", icon: "bell", href: "/analytics", counter: true },
+  { label: "Аналитика", fullLabel: "Аналитика для бизнеса", icon: "bell", href: "/analytics", isNew: true, counter: true },
   { label: "Новый платёж", icon: "plus" },
   { label: "Лента операций", icon: "list" },
   { label: "Платежи в работе", icon: "clockCircle" },
@@ -54,7 +54,6 @@ export function SideNav() {
             <span className="lbl truncate">{it.label}</span>
             {it.isNew || (it.counter && events > 0) ? (
               <span className="nav-end">
-                {it.isNew ? <span className="badge-new">Новое</span> : null}
                 {it.counter && events > 0 ? (
                   <>
                     <span className="counter" aria-hidden="true">
@@ -63,6 +62,7 @@ export function SideNav() {
                     <span className="sr">, новых событий: {events}</span>
                   </>
                 ) : null}
+                {it.isNew ? <span className="badge-new">Новое</span> : null}
               </span>
             ) : null}
           </>

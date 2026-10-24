@@ -1,8 +1,5 @@
 "use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { RoleDialog } from "@/components/dialogs/RoleDialog";
 import { ErrorState } from "@/components/states/StateBlock";
 import { ImpactLevel, TypeBadge } from "@/components/ui/badges";
 import { FACTOR_LABEL, roleName } from "@/lib/labels";
@@ -14,23 +11,19 @@ import { useSession } from "@/lib/session";
 export function EventsWidget() {
   const { company, role, hidden } = useSession();
   const { state, loading, reload } = useFeed();
-  const [roleOpen, setRoleOpen] = useState(false);
 
   const items = state.status === "ready" ? state.data.filter((i) => !hidden[i.id]).slice(0, 3) : [];
 
   return (
-    <section className="card card--wide col-span-2 flex flex-col gap-5 rounded-[20px] bg-surface p-[22px]" aria-labelledby="w-title">
+    <section className="card card--wide col-span-2 flex flex-col gap-5 rounded-[16px] bg-surface p-6 max-[760px]:col-span-1" aria-labelledby="w-title">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 id="w-title" className="m-0 flex flex-wrap items-center gap-2.5 text-[18px] leading-6 font-bold">
+          <h2 id="w-title" className="m-0 flex flex-wrap items-center gap-2.5 text-[18px] leading-6 font-semibold tracking-[-0.01em]">
             События для вашего бизнеса
             <span className="badge-new">Новое</span>
           </h2>
           <p className="muted m-0 text-[14px] leading-5">
-            Три главных события для {company?.name}. Выводы для роли «{roleName(role)}».{" "}
-            <button type="button" className="lnk !min-h-6 !p-0 !text-[14px]" onClick={() => setRoleOpen(true)} aria-haspopup="dialog">
-              Сменить
-            </button>
+            Три главных события для {company?.name}. Выводы для роли «{roleName(role)}».
           </p>
         </div>
         <Link href="/analytics" className="btn btn-primary">
@@ -70,7 +63,6 @@ export function EventsWidget() {
           ))}
         </div>
       )}
-      {roleOpen ? <RoleDialog onClose={() => setRoleOpen(false)} /> : null}
     </section>
   );
 }
